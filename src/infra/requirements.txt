@@ -6,3 +6,5 @@ pyodbc
 joblib
 langchain
 openai
+python-multipart
+pydantic
