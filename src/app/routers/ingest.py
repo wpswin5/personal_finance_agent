@@ -26,12 +26,12 @@ async def upload_transactions(file: UploadFile):
             raise HTTPException(status_code=400, detail=f"Validation error: {e}")
 
     # Insert into DB
-    conn = get_connection()
-    cursor = conn.cursor()
-    cursor.executemany(
-        """INSERT INTO transactions (user_id, posted_at, amount, currency, merchant_name, description)
-           VALUES (?, ?, ?, ?, ?, ?)""",
-        [(t.user_id, t.posted_at, t.amount, t.currency, t.merchant_name, t.description) for t in transactions]
-    )
-    conn.commit()
-    return {"inserted": len(transactions), "status": "success"}
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        cursor.executemany(
+            """INSERT INTO transactions (user_id, posted_at, amount, currency, merchant_name, description)
+            VALUES (?, ?, ?, ?, ?, ?)""",
+            [(t.user_id, t.posted_at, t.amount, t.currency, t.merchant_name, t.description) for t in transactions]
+        )
+        conn.commit()
+        return {"inserted": len(transactions), "status": "success"}
