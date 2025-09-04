@@ -47,21 +47,6 @@ def fetch_accounts(access_token: str) -> List[Dict]:
     ag_res = client.accounts_get(ag_req)
     return ag_res.to_dict()["accounts"]
 
-def create_sandbox_transactions(access_token: str, count: int = 20):
-    """
-    Force-create fake transactions in the Plaid sandbox.
-    """
-    body = {
-        "access_token": access_token,
-        "count": count,
-    }
-    response = client.api_client.call_api(
-        "/sandbox/transactions/create", "POST",
-        body=body,
-        response_type="object"
-    )
-    print("✨ Created sandbox transactions:", response[0])
-
 def fetch_all_transactions(access_token: str, count: int = 500) -> list[dict]:
     """Use transactions_sync to retrieve all added transactions (paginated by cursor)."""
     txs: list[dict] = []
@@ -86,7 +71,6 @@ def fetch_all_transactions(access_token: str, count: int = 500) -> list[dict]:
 def main():
     access_token = create_access_token()
     accounts = fetch_accounts(access_token)
-    create_sandbox_transactions(access_token, count=30)
     transactions = fetch_all_transactions(access_token)
 
     # Minimal preview to confirm it’s working
