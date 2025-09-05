@@ -1,6 +1,8 @@
 import os
+import pyodbc
 import json
 import datetime as dt
+import time
 from typing import List, Dict
 from dotenv import load_dotenv
 
@@ -14,6 +16,10 @@ from plaid.model.products import Products
 from plaid.model.item_public_token_exchange_request import ItemPublicTokenExchangeRequest
 from plaid.model.transactions_sync_request import TransactionsSyncRequest
 from plaid.model.accounts_get_request import AccountsGetRequest
+from plaid.model.sandbox_transactions_create_request import SandboxTransactionsCreateRequest
+
+
+from transaction_generator import generate_fake_transactions
 
 PLAID_CLIENT_ID = os.getenv("PLAID_CLIENT_ID")
 PLAID_SECRET = os.getenv("PLAID_SECRET")
@@ -47,31 +53,95 @@ def fetch_accounts(access_token: str) -> List[Dict]:
     ag_res = client.accounts_get(ag_req)
     return ag_res.to_dict()["accounts"]
 
-def fetch_all_transactions(access_token: str, count: int = 500) -> list[dict]:
-    """Use transactions_sync to retrieve all added transactions (paginated by cursor)."""
-    txs: list[dict] = []
-    cursor: str | None = None
+def create_sandbox_transactions(access_token: str, txs: list[dict]):
+    request = SandboxTransactionsCreateRequest(
+        access_token=access_token,
+        transactions=txs
+    )
+
+    try:
+        response = client.sandbox_transactions_create(request)
+        print(f"✨ Created {len(txs)} sandbox transactions")
+        return response.to_dict()
+    except Exception as e:
+        print("❌ Error creating sandbox transactions:", e)
+        raise
+
+# -------------------------------
+# Step 3. Fetch All Transactions
+# -------------------------------
+def fetch_all_transactions(access_token: str, count: int = 100):
+    cursor = ""
+    all_transactions = []
 
     while True:
-        if cursor:
-            req = TransactionsSyncRequest(access_token=access_token, cursor=cursor, count=count)
-        else:
-            req = TransactionsSyncRequest(access_token=access_token, count=count)
-
+        req = TransactionsSyncRequest(
+            access_token=access_token,
+            cursor=cursor,
+            count=count,
+        )
         res = client.transactions_sync(req).to_dict()
 
-        txs.extend(res.get("added", []))
-        cursor = res.get("next_cursor")
+        txs = res.get("added", [])
+        all_transactions.extend(txs)
 
+        cursor = res.get("next_cursor")
         if not res.get("has_more"):
             break
 
-    return txs
+    print(f"📥 Fetched {len(all_transactions)} transactions from Plaid")
+    return all_transactions
+
+def insert_transactions_sql(transactions: list[dict]):
+    print("Trying to connect to SQL Server")
+    with pyodbc.connect(os.getenv("AZURE_SQL_CONN")) as conn:
+        print("Connected to SQL server")
+        cursor = conn.cursor()
+        print(len(transactions))
+        for tx in transactions:
+            merchant = tx.get("merchant_name") or tx.get("name")
+            pf_category = tx.get("personal_finance_category", {})
+            category_pred = pf_category.get("primary")
+            confidence_level = pf_category.get("confidence_level")
+            plaid_tx_id = tx.get("transaction_id")
+            category_conf = 1.0 if confidence_level == "VERY_HIGH" else 0.5
+
+            cursor.execute("""
+                IF NOT EXISTS (SELECT 1 FROM transactions WHERE plaid_transaction_id = ?)
+                BEGIN
+                    INSERT INTO transactions
+                    (user_id, posted_at, amount, currency, merchant_name, description,
+                    category_id, category_pred, category_conf, source, plaid_transaction_id)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                END
+            """, (
+                plaid_tx_id,
+                "sandbox_user",
+                tx.get("date"),
+                tx.get("amount"),
+                tx.get("iso_currency_code"),
+                merchant,
+                tx.get("name"),
+                None,
+                category_pred,
+                category_conf,
+                "plaid",
+                plaid_tx_id,
+            ))
+
+
+        conn.commit()
+        print(f"✅ Inserted {len(transactions)} transactions into Azure SQL")
 
 def main():
     access_token = create_access_token()
+    fake_txs = generate_fake_transactions(10)
+    create_sandbox_transactions(access_token, fake_txs)
     accounts = fetch_accounts(access_token)
+    time.sleep(5)
     transactions = fetch_all_transactions(access_token)
+    insert_transactions_sql(transactions)
+
 
     # Minimal preview to confirm it’s working
     preview = {
