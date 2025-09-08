@@ -10,3 +10,8 @@ python-multipart
 pydantic
 plaid-python
 faker
+requests
+python-jose
+pyjwt
+dotenv
+pyjwt
