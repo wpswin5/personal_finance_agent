@@ -1,5 +1,6 @@
 fastapi
 uvicorn
+uvicorn[standard]
 pandas
 scikit-learn
 pyodbc
@@ -15,3 +16,4 @@ python-jose
 pyjwt
 dotenv
 pyjwt
+pyjwt[crypto]

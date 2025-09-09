@@ -1,7 +1,20 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from app.routers import ingest, classify, anomalies, insights, chat, auth
 
 app = FastAPI(title="Personal Finance Agent")
+
+origins = [
+    "http://localhost:3000"
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,       # frontend URLs allowed
+    allow_credentials=True,
+    allow_methods=["*"],         # GET, POST, OPTIONS, etc.
+    allow_headers=["*"],         # Authorization, Content-Type, etc.
+)
 
 # Include routers
 app.include_router(ingest.router, prefix="/ingest", tags=["Ingest"])
