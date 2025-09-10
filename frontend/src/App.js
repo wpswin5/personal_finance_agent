@@ -1,39 +1,40 @@
-import React, { useState } from "react";
-import { msalInstance, initializeMsal } from "./msalInstance";
-import { loginRequest } from "./authConfig";
-import { callApi } from "./api";
+import React, { useEffect, useState } from "react";
+import { useAuth0 } from "@auth0/auth0-react";
+import axios from "axios";
 
 function App() {
-  const [userData, setUserData] = useState(null);
+  const { loginWithPopup, logout, getAccessTokenSilently, user, isAuthenticated } = useAuth0();
+  const [me, setMe] = useState(null);
 
-  const handleLogin = async () => {
-    try {
-      // Make sure MSAL is initialized
-      const instance = await initializeMsal();
-
-      const loginResponse = await instance.loginPopup(loginRequest);
-      const account = loginResponse.account;
-      instance.setActiveAccount(account);
-
-      const tokenResponse = await instance.acquireTokenSilent({
-        ...loginRequest,
-        account
-      });
-
-      const data = await callApi(tokenResponse.accessToken);
-      setUserData(data);
-    } catch (err) {
-      console.error("Login / API call error:", err);
-    }
-  };
+  useEffect(() => {
+    const fetchMe = async () => {
+      if (isAuthenticated) {
+        try {
+          const token = await getAccessTokenSilently({
+            audience: "https://myapi.example.com",  // MUST match your API identifier
+            scope: "read:messages"                   // optional, depends on API
+          });
+          const response = await axios.get("http://localhost:8000/auth/me", {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          setMe(response.data);
+        } catch (err) {
+          console.error(err);
+        }
+      }
+    };
+    fetchMe();
+  }, [isAuthenticated, getAccessTokenSilently]);
 
   return (
-    <div style={{ padding: 20 }}>
-      <h1>Finance API POC</h1>
-      {!userData ? (
-        <button onClick={handleLogin}>Login & Call API</button>
-      ) : (
-        <pre>{JSON.stringify(userData, null, 2)}</pre>
+    <div style={{ padding: "2rem" }}>
+      {!isAuthenticated && <button onClick={loginWithPopup}>Log In / Sign Up</button>}
+      {isAuthenticated && (
+        <>
+          <h2>Hello, {user.name || user.email}</h2>
+          <pre>{JSON.stringify(me, null, 2)}</pre>
+          <button onClick={() => logout({ returnTo: window.location.origin })}>Logout</button>
+        </>
       )}
     </div>
   );

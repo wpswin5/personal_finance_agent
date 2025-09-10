@@ -4,6 +4,7 @@ uvicorn[standard]
 pandas
 scikit-learn
 pyodbc
+sqlalchemy
 joblib
 langchain
 openai
