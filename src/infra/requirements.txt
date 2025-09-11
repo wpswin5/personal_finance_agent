@@ -10,11 +10,12 @@ langchain
 openai
 python-multipart
 pydantic
+pydantic[email]
+pydantic-settings
 plaid-python
 faker
 requests
 python-jose
-pyjwt
 dotenv
 pyjwt
 pyjwt[crypto]

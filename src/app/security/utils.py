@@ -1,9 +1,9 @@
 from fastapi import Depends
 from fastapi.security import SecurityScopes
 
-from security.oauth import oauth2_scheme
-from security.token_tools import AccessToken
-from security.token_tools import TokenTools, CREDENTIALS_EXCEPTION
+from app.security.oauth import oauth2_scheme
+from app.security.token_tools import AccessToken
+from app.security.token_tools import TokenTools, CREDENTIALS_EXCEPTION
 
 
 def token_tools_factory(token=Depends(oauth2_scheme)) -> TokenTools:

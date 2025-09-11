@@ -9,8 +9,8 @@ from fastapi.security import SecurityScopes
 from jose import JWTError
 from jose import jwt
 
-from security.token import AccessToken
-from config import get_settings
+from app.security.token import AccessToken
+from app.config import get_settings
 
 
 CREDENTIALS_EXCEPTION = HTTPException(

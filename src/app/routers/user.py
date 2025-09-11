@@ -6,9 +6,9 @@ from pydantic import BaseModel, AnyUrl, EmailStr
 
 from auth0.exceptions import Auth0Error
 
-from security.utils import verify_token
-from dependencies import get_auth0_users_client, get_auth0_management_client, authentication, management
-from config import get_settings, Settings
+from app.security.utils import verify_token
+from app.dependencies import get_auth0_users_client, get_auth0_management_client, authentication, management
+from app.config import get_settings, Settings
 
 router = APIRouter()
 
@@ -20,7 +20,9 @@ async def read_user_me(
     auth0_users: authentication.Users = Depends(get_auth0_users_client)
 ) -> dict:
     try:
+        print("Calling method read_user_me")
         userinfo = auth0_users.userinfo(access_token=access_token)   
+        print("Userinfo: "+ userinfo)
     except Auth0Error as e:
         raise HTTPException(status_code=e.status_code, detail=e.message)
     return userinfo
