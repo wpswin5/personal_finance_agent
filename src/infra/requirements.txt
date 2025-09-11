@@ -18,3 +18,4 @@ pyjwt
 dotenv
 pyjwt
 pyjwt[crypto]
+auth0-python

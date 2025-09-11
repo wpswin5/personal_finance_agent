@@ -11,10 +11,10 @@ function App() {
       if (isAuthenticated) {
         try {
           const token = await getAccessTokenSilently({
-            audience: "https://myapi.example.com",  // MUST match your API identifier
-            scope: "read:messages"                   // optional, depends on API
+            audience: "https://fastapiexample.com",  // MUST match your API identifier
+            scope: "test:read"                   // optional, depends on API
           });
-          const response = await axios.get("http://localhost:8000/auth/me", {
+          const response = await axios.get("http://localhost:8000/user/me", {
             headers: { Authorization: `Bearer ${token}` },
           });
           setMe(response.data);
