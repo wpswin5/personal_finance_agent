@@ -9,6 +9,7 @@ from auth0.exceptions import Auth0Error
 from app.security.utils import verify_token
 from app.dependencies import get_auth0_users_client, get_auth0_management_client, authentication, management
 from app.config import get_settings, Settings
+from app.db import upsert_user
 
 router = APIRouter()
 
@@ -20,11 +21,12 @@ async def read_user_me(
     auth0_users: authentication.Users = Depends(get_auth0_users_client)
 ) -> dict:
     try:
-        print("Calling method read_user_me")
-        userinfo = auth0_users.userinfo(access_token=access_token)   
-        print("Userinfo: "+ userinfo)
+        userinfo = auth0_users.userinfo(access_token=access_token)
+        upsert_user(userinfo)
     except Auth0Error as e:
         raise HTTPException(status_code=e.status_code, detail=e.message)
+    except:
+        raise
     return userinfo
 
 class CreateUser(BaseModel):
@@ -85,22 +87,22 @@ async def delete_user(
 # auth = VerifyToken
 
 # @router.get("/me")
-# async def get_me(user: dict=Depends(verify_token)):
-#     # Persist user if first login
-#     print("getting user info")
-#     sub = user["sub"]
-#     email = user.get("email")
-#     with get_connection() as conn:
-#         print("sql conn open")
-#         cursor = conn.cursor()
-#         cursor.execute("SELECT COUNT(1) FROM users WHERE sub = ?", sub)
-#         exists = cursor.fetchone()[0]
-#         if not exists:
-#             cursor.execute(
-#                 "INSERT INTO users (sub, email, name) VALUES (?, ?, ?)",
-#                 sub,
-#                 email,
-#                 user.get("name")
-#             )
-#             conn.commit()
-#     return {"sub": sub, "email": email}
+async def get_me(user: dict=Depends(verify_token)):
+    # Persist user if first login
+    print("getting user info")
+    sub = user["sub"]
+    email = user.get("email")
+    with get_connection() as conn:
+        print("sql conn open")
+        cursor = conn.cursor()
+        cursor.execute("SELECT COUNT(1) FROM users WHERE sub = ?", sub)
+        exists = cursor.fetchone()[0]
+        if not exists:
+            cursor.execute(
+                "INSERT INTO users (sub, email, name) VALUES (?, ?, ?)",
+                sub,
+                email,
+                user.get("name")
+            )
+            conn.commit()
+    return {"sub": sub, "email": email}

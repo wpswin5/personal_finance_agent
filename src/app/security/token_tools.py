@@ -9,7 +9,7 @@ from fastapi.security import SecurityScopes
 from jose import JWTError
 from jose import jwt
 
-from app.security.token import AccessToken
+from app.security.access_token import AccessToken
 from app.config import get_settings
 
 
