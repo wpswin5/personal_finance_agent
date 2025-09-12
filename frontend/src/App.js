@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useAuth0 } from "@auth0/auth0-react";
 import axios from "axios";
+import "./App.css";
 
 function App() {
   const { loginWithPopup, logout, getAccessTokenSilently, user, isAuthenticated } = useAuth0();
@@ -27,7 +28,8 @@ function App() {
   }, [isAuthenticated, getAccessTokenSilently]);
 
   return (
-    <div style={{ padding: "2rem" }}>
+    <div className="app-container">
+      <h1 className="app-title">Personal Finance Dashboard</h1>
       {!isAuthenticated && <button onClick={loginWithPopup}>Log In / Sign Up</button>}
       {isAuthenticated && (
         <>
