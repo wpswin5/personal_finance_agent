@@ -1,0 +1,24 @@
+.accounts-container {
+  min-height: calc(100vh - 70px);
+  background: #f8f9fa;
+}
+
+.loading-spinner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 300px;
+  font-size: 1.2rem;
+  color: #7f8c8d;
+}
+
+.error-message {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 300px;
+  font-size: 1.1rem;
+  color: #e74c3c;
+  text-align: center;
+  padding: 20px;
+}

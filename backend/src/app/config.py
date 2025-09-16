@@ -21,6 +21,14 @@ class Settings(BaseSettings):
     #AUTH0_MANAGEMENT_API_CLIENT_ID: str
     #AUTH0_MANAGEMENT_API_CLIENT_SECRET: str
     #AUTH0_MANAGEMENT_API_AUDIENCE: str
+    
+    # Plaid configuration
+    PLAID_CLIENT_ID: str
+    PLAID_SECRET: str
+    PLAID_ENV: str = "sandbox"  # sandbox, development, or production
+    
+    # Encryption key for sensitive data
+    ENCRYPTION_KEY: str = "your-32-byte-encryption-key-here"  # Should be 32 bytes for AES-256
 
     class Config:
         """

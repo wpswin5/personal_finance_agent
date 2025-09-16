@@ -1,0 +1,302 @@
+.plaid-integration {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.plaid-header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.plaid-header h2 {
+  color: #2c3e50;
+  margin-bottom: 10px;
+}
+
+.plaid-header p {
+  color: #7f8c8d;
+  font-size: 16px;
+}
+
+.plaid-connect-section {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+  margin-bottom: 40px;
+  padding: 30px;
+  background: #f8f9fa;
+  border-radius: 10px;
+}
+
+.connect-info h3 {
+  color: #2c3e50;
+  margin-bottom: 15px;
+}
+
+.connect-info ul {
+  list-style: none;
+  padding: 0;
+}
+
+.connect-info li {
+  padding: 8px 0;
+  color: #34495e;
+}
+
+.connect-info li:before {
+  content: "✓ ";
+  color: #27ae60;
+  font-weight: bold;
+}
+
+.connect-action {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+.security-note {
+  margin-top: 15px;
+  font-size: 14px;
+  color: #7f8c8d;
+  max-width: 300px;
+}
+
+.btn {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.btn-primary {
+  background-color: #3498db;
+  color: white;
+}
+
+.btn-primary:hover {
+  background-color: #2980b9;
+}
+
+.btn-success {
+  background-color: #27ae60;
+  color: white;
+}
+
+.btn-success:hover {
+  background-color: #229954;
+}
+
+.btn-danger {
+  background-color: #e74c3c;
+  color: white;
+}
+
+.btn-danger:hover {
+  background-color: #c0392b;
+}
+
+.btn-sm {
+  padding: 6px 12px;
+  font-size: 14px;
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.tabs {
+  display: flex;
+  border-bottom: 2px solid #ecf0f1;
+  margin-bottom: 20px;
+}
+
+.tab {
+  padding: 12px 24px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  color: #7f8c8d;
+  border-bottom: 2px solid transparent;
+  transition: all 0.3s ease;
+}
+
+.tab:hover {
+  color: #2c3e50;
+}
+
+.tab.active {
+  color: #3498db;
+  border-bottom-color: #3498db;
+}
+
+.alert {
+  padding: 15px;
+  border-radius: 6px;
+  margin-bottom: 20px;
+}
+
+.alert-info {
+  background-color: #d1ecf1;
+  border: 1px solid #bee5eb;
+  color: #0c5460;
+}
+
+.alert-danger {
+  background-color: #f8d7da;
+  border: 1px solid #f5c6cb;
+  color: #721c24;
+}
+
+.loading {
+  text-align: center;
+  padding: 40px;
+  color: #7f8c8d;
+  font-size: 18px;
+}
+
+.connections-list {
+  display: grid;
+  gap: 15px;
+}
+
+.connection-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  background: white;
+  border: 1px solid #ecf0f1;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.connection-info h4 {
+  margin: 0 0 5px 0;
+  color: #2c3e50;
+}
+
+.connection-info p {
+  margin: 2px 0;
+  color: #7f8c8d;
+  font-size: 14px;
+}
+
+.accounts-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.account-card {
+  padding: 20px;
+  background: white;
+  border: 1px solid #ecf0f1;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.account-card h4 {
+  margin: 0 0 10px 0;
+  color: #2c3e50;
+}
+
+.account-card p {
+  margin: 5px 0;
+  color: #7f8c8d;
+}
+
+.transactions-list {
+  display: grid;
+  gap: 10px;
+}
+
+.transaction-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px;
+  background: white;
+  border: 1px solid #ecf0f1;
+  border-radius: 6px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.transaction-info h4 {
+  margin: 0 0 5px 0;
+  color: #2c3e50;
+  font-size: 16px;
+}
+
+.transaction-info p {
+  margin: 2px 0;
+  color: #7f8c8d;
+  font-size: 14px;
+}
+
+.transaction-amount {
+  text-align: right;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.transaction-amount .debit {
+  color: #e74c3c;
+}
+
+.transaction-amount .credit {
+  color: #27ae60;
+}
+
+.badge {
+  background-color: #f39c12;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.add-more-accounts {
+  margin-top: 40px;
+  padding: 30px;
+  background: #f8f9fa;
+  border-radius: 10px;
+  text-align: center;
+}
+
+.add-more-accounts h3 {
+  color: #2c3e50;
+  margin-bottom: 20px;
+}
+
+@media (max-width: 768px) {
+  .plaid-connect-section {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  
+  .accounts-list {
+    grid-template-columns: 1fr;
+  }
+  
+  .transaction-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .transaction-amount {
+    align-self: flex-end;
+    margin-top: 10px;
+  }
+}
