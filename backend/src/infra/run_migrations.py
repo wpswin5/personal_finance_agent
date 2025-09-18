@@ -7,7 +7,7 @@ load_dotenv()
 MIGRATIONS_DIR = "infra/migrations"
 
 conn = pyodbc.connect(os.getenv("AZURE_SQL_CONN"))
-print("test")
+
 cursor = conn.cursor()
 
 for filename in sorted(os.listdir(MIGRATIONS_DIR)):

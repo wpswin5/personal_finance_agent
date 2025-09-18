@@ -20,7 +20,7 @@ const Navigation = () => {
       <div className="nav-container">
         <div className="nav-brand">
           <Link to="/" className="brand-link">
-            💰 Personal Finance Agent
+            Finance Assistant
           </Link>
         </div>
         

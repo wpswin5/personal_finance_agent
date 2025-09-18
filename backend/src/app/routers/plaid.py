@@ -1,8 +1,11 @@
 import logging
+from dotenv import load_dotenv
 from datetime import datetime, timedelta
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import SecurityScopes
+from plaid.model.accounts_get_request import AccountsGetRequest
+from plaid.model.transactions_sync_request import TransactionsSyncRequest
 
 from app.models import (
     PlaidLinkTokenRequest, 
@@ -11,8 +14,10 @@ from app.models import (
     PlaidPublicTokenExchangeResponse,
     PlaidAccountsResponse,
     PlaidTransactionsResponse,
-    PlaidUser
+    PlaidUser,
+    SyncItemRequest
 )
+from app.db import get_connection
 from app.services.plaid_service import plaid_service
 from app.services.plaid_db_service import plaid_db_service
 from app.security.utils import get_verified_token
@@ -20,6 +25,7 @@ from app.security.access_token import AccessToken
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
+load_dotenv()
 
 @router.post("/create_link_token", response_model=PlaidLinkTokenResponse)
 async def create_link_token(
@@ -70,6 +76,7 @@ async def exchange_public_token(
             )
         
         # Exchange public token for access token
+        print("exchanging result")
         exchange_result = plaid_service.exchange_public_token(request.public_token)
         access_token = exchange_result['access_token']
         item_id = exchange_result['item_id']
@@ -292,3 +299,83 @@ async def delete_plaid_connection(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to delete Plaid connection: {str(e)}"
         )
+
+@router.post("/sync_item")
+async def sync_item(request: SyncItemRequest, db=Depends(get_connection)):
+    """
+    Sync accounts + transactions for a given Plaid item.
+    - Fetch access_token from DB
+    - Call PlaidService (accounts + transactions)
+    - Upsert results into Azure SQL (deduplicated with MERGE)
+    """
+    item_id = request.item_id
+    cursor = db.cursor()
+
+    # 1. Lookup access_token
+    cursor.execute("SELECT access_token FROM plaid_users WHERE item_id = ?", (item_id,))
+    row = cursor.fetchone()
+    if not row:
+        raise HTTPException(status_code=404, detail="Item not found")
+    access_token = row[0]
+
+    # 2. Fetch Accounts (via PlaidService wrapper)
+    accounts = plaid_service.get_accounts(access_token)
+    for acct in accounts:
+        cursor.execute("""
+            MERGE accounts AS target
+            USING (SELECT ? AS account_id) AS source
+            ON target.account_id = source.account_id
+            WHEN MATCHED THEN
+                UPDATE SET name=?, type=?, subtype=?, balance_current=?, currency=?
+            WHEN NOT MATCHED THEN
+                INSERT (account_id, plaid_user_id, name, type, subtype, balance_current, currency)
+                VALUES (?, (SELECT id FROM plaid_users WHERE item_id=?), ?, ?, ?, ?, ?);
+        """, (
+            acct.account_id,
+            acct.name,
+            acct.type,
+            acct.subtype,
+            acct.balance,
+            acct.currency,
+            acct.account_id,
+            item_id,
+            acct.name,
+            acct.type,
+            acct.subtype,
+            acct.balance,
+            acct.currency,
+        ))
+
+    # 3. Fetch Transactions (last 30 days default)
+    transactions = plaid_service.get_transactions(access_token)
+    for tx in transactions:
+        print(tx)
+        cursor.execute("""
+            MERGE transactions AS target
+            USING (SELECT ? AS transaction_id) AS source
+            ON target.transaction_id = source.transaction_id
+            WHEN MATCHED THEN
+                UPDATE SET amount=?, created_at=?, merchant_name=?, description=?, is_pending=?, category=?
+            WHEN NOT MATCHED THEN
+                INSERT (transaction_id, account_id, amount, date_posted, merchant_name, description, is_pending, category)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+        """, (
+            tx.transaction_id,
+            tx.amount,
+            tx.date,
+            tx.merchant_name,
+            tx.name,
+            tx.pending,
+            ",".join(tx.category) if tx.category else None,
+            tx.transaction_id,
+            tx.account_id,
+            tx.amount,
+            tx.date,
+            tx.merchant_name,
+            tx.name,
+            tx.pending,
+            ",".join(tx.category) if tx.category else None,
+        ))
+
+    db.commit()
+    return {"status": "ok", "item_id": item_id, "accounts_synced": len(accounts), "transactions_synced": len(transactions)}

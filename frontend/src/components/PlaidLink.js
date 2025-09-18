@@ -43,18 +43,26 @@ const PlaidLink = ({ onSuccess, onError, token }) => {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
         },
-        body: JSON.stringify({
+        body: JSON.stringify({ 
           public_token,
-          user_id: 'current_user' // This will be handled by the backend using the JWT token
+          user_id: 'current_user' // will be handled by backend
         }),
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to exchange public token');
-      }
+      if (!response.ok) { throw new Error('Failed to exchange public token'); }
 
-      const data = await response.json();
-      onSuccess && onSuccess(data, metadata);
+      const { item_id } = await response.json();
+
+      await fetch(`http://localhost:8000/plaid/sync_item`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ item_id }),
+      });
+
+      onSuccess && onSuccess(item_id, metadata);
     } catch (error) {
       console.error('Error exchanging public token:', error);
       onError && onError(error);
@@ -95,7 +103,7 @@ const PlaidLink = ({ onSuccess, onError, token }) => {
           disabled={!ready}
           className="btn btn-success"
         >
-          {ready ? 'Open Plaid Link' : 'Loading...'}
+          {ready ? 'Connect to Bank' : 'Loading...'}
         </button>
       )}
     </div>

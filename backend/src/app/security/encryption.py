@@ -46,7 +46,6 @@ class EncryptionService:
             return ""
         
         try:
-            print("Trying to decrypt: ", ciphertext)
             encrypted_data = base64.urlsafe_b64decode(ciphertext.encode())
             decrypted_data = self._fernet.decrypt(encrypted_data)
             return decrypted_data.decode()

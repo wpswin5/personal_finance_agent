@@ -20,7 +20,6 @@ class PlaidDBService:
         """Create a new Plaid user record with encrypted access token."""
         try:
             # Encrypt the access token before storing
-            print(access_token)
             encrypted_token = encryption_service.encrypt(access_token)
             
             with get_connection() as conn:

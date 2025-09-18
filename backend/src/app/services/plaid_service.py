@@ -66,7 +66,6 @@ class PlaidService:
             
             response = self.client.link_token_create(request)
             print("Got response")
-            print(response)
             return response['link_token']
             
         except ApiException as e:
@@ -78,7 +77,6 @@ class PlaidService:
         try:
             request = ItemPublicTokenExchangeRequest(public_token=public_token)
             response = self.client.item_public_token_exchange(request)
-            print(response)
             return response
             
             
@@ -97,8 +95,6 @@ class PlaidService:
             
             accounts = []
             for account in response['accounts']:
-                print(account)
-                print("**************")
                 plaid_account = PlaidAccount(
                     account_id=account['account_id'],
                     name=account['name'],

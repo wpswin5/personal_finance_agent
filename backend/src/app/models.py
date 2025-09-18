@@ -64,3 +64,10 @@ class PlaidAccountsResponse(BaseModel):
 class PlaidTransactionsResponse(BaseModel):
     transactions: List[PlaidTransaction]
     total_transactions: int
+
+class SyncItemRequest(BaseModel):
+    item_id: str
+
+class SyncItemResponse(BaseModel):
+    accounts: List[PlaidAccount]
+    transactions: List[PlaidTransaction]
