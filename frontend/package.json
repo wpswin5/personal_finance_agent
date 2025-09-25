@@ -6,6 +6,7 @@
     "@auth0/auth0-react": "^2.4.0",
     "@azure/msal-browser": "^4.22.0",
     "axios": "^1.11.0",
+    "lucide-react": "^0.544.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-plaid-link": "^4.1.1",

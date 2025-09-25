@@ -1,12 +1,7 @@
 import React from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { useAuth0 } from "@auth0/auth0-react";
 import Navigation from "./components/Navigation";
-import Dashboard from "./pages/Dashboard";
-import Accounts from "./pages/Accounts";
-import Transactions from "./pages/Transactions";
-import Insights from "./pages/Insights";
-import Chat from "./pages/Chat";
+import AppRouter from "./navigation/Router";
 import "./App.css";
 
 function App() {
@@ -50,20 +45,13 @@ function App() {
   }
 
   return (
-    <Router>
-      <div className="app-container">
-        <Navigation />
-        <main className="main-content">
-          <Routes>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/accounts" element={<Accounts />} />
-            <Route path="/transactions" element={<Transactions />} />
-            <Route path="/insights" element={<Insights />} />
-            <Route path="/chat" element={<Chat />} />
-          </Routes>
-        </main>
-      </div>
-    </Router>
+    <div className="app-container">
+      <main className="main-content">
+        <AppRouter>
+          <Navigation />
+        </AppRouter>
+      </main>
+    </div>
   );
 }
 
