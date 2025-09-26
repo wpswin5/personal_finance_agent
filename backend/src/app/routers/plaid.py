@@ -8,6 +8,7 @@ from plaid.model.accounts_get_request import AccountsGetRequest
 from plaid.model.transactions_sync_request import TransactionsSyncRequest
 
 from app.models import (
+    PlaidAccount,
     PlaidLinkTokenRequest, 
     PlaidLinkTokenResponse,
     PlaidPublicTokenExchangeRequest,
@@ -109,7 +110,7 @@ async def exchange_public_token(
 
 @router.get("/accounts", response_model=PlaidAccountsResponse)
 async def get_accounts(
-    plaid_user_id: Optional[int] = None,
+    plaid_user_ids: Optional[List[int]] = None,
     token: AccessToken = Depends(get_verified_token)
 ):
     """Get accounts for the authenticated user."""
@@ -123,23 +124,32 @@ async def get_accounts(
             )
         
         # Get Plaid user record
-        if plaid_user_id:
-            plaid_user = plaid_db_service.get_plaid_user_by_user_id(user_id)
-            if not plaid_user or plaid_user.id != plaid_user_id:
+        if plaid_user_ids:
+            plaid_users = plaid_db_service.get_all_plaid_users_for_user(user_id)
+            if not plaid_users or len(plaid_users) == 0:
                 raise HTTPException(
                     status_code=status.HTTP_404_NOT_FOUND,
                     detail="Plaid connection not found"
                 )
         else:
-            plaid_user = plaid_db_service.get_plaid_user_by_user_id(user_id)
-            if not plaid_user:
+            plaid_users = plaid_db_service.get_all_plaid_users_for_user(user_id)
+            print("Users: ", plaid_users)
+            if not plaid_users:
                 raise HTTPException(
                     status_code=status.HTTP_404_NOT_FOUND,
                     detail="No Plaid connection found for user"
                 )
         
         # Get accounts from Plaid
-        accounts = plaid_service.get_accounts(plaid_user.access_token)
+        accounts = []
+        for user in plaid_users:
+            print("Individual user: ", user)
+            response = plaid_service.get_accounts(user.access_token)
+            print("Response:  ", response)
+            for account in response:
+                account.connection_id = user.id
+                accounts.append(account)
+        #accounts = plaid_service.get_accounts(plaid_user.access_token)
         
         return PlaidAccountsResponse(accounts=accounts)
         

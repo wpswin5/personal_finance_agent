@@ -42,6 +42,7 @@ class PlaidUser(BaseModel):
 
 class PlaidAccount(BaseModel):
     account_id: str
+    connection_id: Optional[int] = None
     name: str
     type: str
     subtype: Optional[str] = None

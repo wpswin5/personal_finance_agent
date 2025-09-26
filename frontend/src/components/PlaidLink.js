@@ -32,6 +32,7 @@ const PlaidLink = ({ onSuccess, onError, token }) => {
     } finally {
       setLoading(false);
     }
+    open()
   };
 
   // Handle successful link

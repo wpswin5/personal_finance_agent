@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth0 } from '@auth0/auth0-react';
 import PlaidIntegration from '../components/PlaidIntegration';
+import PlaidConnection from '../components/PlaidConnection';
 import './Accounts.css';
 
 const Accounts = () => {
@@ -48,6 +49,7 @@ const Accounts = () => {
 
   return (
     <div className="accounts-container">
+      <PlaidConnection token={token} plaidConnected={true} />
       <PlaidIntegration token={token} />
     </div>
   );
