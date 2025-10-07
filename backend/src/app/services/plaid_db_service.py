@@ -2,7 +2,7 @@ import logging
 from typing import Optional, List
 import pyodbc
 from app.db import get_connection
-from app.models import PlaidUser
+from app.models.plaid_models import PlaidUser
 from app.security.encryption import encryption_service
 
 logger = logging.getLogger(__name__)

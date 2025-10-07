@@ -1,4 +1,5 @@
 from pydantic import BaseModel, validator
+from fastapi import Depends
 from datetime import date, datetime
 from typing import Optional, List
 

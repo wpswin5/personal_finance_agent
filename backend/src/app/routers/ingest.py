@@ -1,6 +1,6 @@
 from fastapi import APIRouter, UploadFile, HTTPException
 import pandas as pd
-from app.models import TransactionIn
+from app.models.plaid_models import TransactionIn
 from app.db import get_connection
 
 router = APIRouter()

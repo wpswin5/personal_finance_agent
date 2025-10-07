@@ -10,10 +10,26 @@ from app.security.utils import verify_token
 from app.dependencies import get_auth0_users_client, get_auth0_management_client, authentication, management
 from app.config import get_settings, Settings
 from app.db import upsert_user
+from app.db import get_id
 
 router = APIRouter()
 
 settings: Settings = get_settings()
+
+@router.get("/id")
+async def get_current_user_id(
+    access_token: str = Depends(verify_token),
+    auth0_users: authentication.Users = Depends(get_auth0_users_client)
+) -> int:
+    try:
+        userinfo = auth0_users.userinfo(access_token=access_token)
+        user_id = get_id(userinfo.get("sub"))
+        print("User id: ", user_id)
+    except Auth0Error as e:
+        raise HTTPException(status_code=e.status_code, detail=e.message)
+    except:
+        raise
+    return user_id
 
 @router.get("/me")
 async def read_user_me(

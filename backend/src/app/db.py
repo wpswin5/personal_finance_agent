@@ -51,3 +51,16 @@ def upsert_user(user: dict):
                 user.get("name"),
             )
             conn.commit()
+
+def get_id(sub: str):
+    """
+    Get user id by auth0 sub
+    """
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT id FROM users WHERE sub = ?", sub)
+    row = cursor.fetchone()
+
+    return row[0]
+

@@ -7,7 +7,7 @@ from fastapi.security import SecurityScopes
 from plaid.model.accounts_get_request import AccountsGetRequest
 from plaid.model.transactions_sync_request import TransactionsSyncRequest
 
-from app.models import (
+from app.models.plaid_models import (
     PlaidAccount,
     PlaidLinkTokenRequest, 
     PlaidLinkTokenResponse,

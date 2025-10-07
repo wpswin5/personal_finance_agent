@@ -16,7 +16,7 @@ from plaid.api_client import ApiClient
 from plaid.exceptions import ApiException
 
 from app.config import get_settings
-from app.models import PlaidAccount, PlaidTransaction
+from app.models.plaid_models import PlaidAccount, PlaidTransaction
 from app.security.encryption import encryption_service
 
 logger = logging.getLogger(__name__)

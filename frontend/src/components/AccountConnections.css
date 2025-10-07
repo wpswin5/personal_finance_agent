@@ -1,0 +1,173 @@
+.plaid-data-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.connections-tab h3 {
+  color: #2c3e50;
+  margin-bottom: 20px;
+}
+
+.connections-list-vertical {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.connection-block {
+  border-radius: 10px;
+  background: #fff;
+  border: 1px solid #ecf0f1;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+  overflow: hidden;
+}
+
+.connection-card {
+  cursor: pointer;
+  padding: 14px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #fafafa;
+  transition: background 0.3s ease;
+}
+
+.connection-card:hover {
+  background: #f3f6f8;
+}
+
+.connection-header {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.connection-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.connection-title h4 {
+  margin: 0;
+  color: #2c3e50;
+}
+
+.connection-meta {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.connection-meta p {
+  margin: 0;
+  color: #7f8c8d;
+  font-size: 14px;
+}
+
+/* Chevron animation */
+.chevron {
+  display: inline-block;
+  transition: transform 0.2s ease;
+  color: #3498db;
+  font-weight: bold;
+}
+
+.chevron.open {
+  transform: rotate(90deg);
+}
+
+/* Collapsible section for accounts */
+.accounts-collapsible {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.25s ease, padding 0.25s ease;
+  padding: 0 20px;
+  border-left: 3px solid #ecf0f1;
+  margin-left: 15px;
+}
+
+.accounts-collapsible.expanded {
+  max-height: 800px;
+  padding: 10px 20px 15px 20px;
+}
+
+.account-card {
+  background: #f8f9fa;
+  border: 1px solid #ecf0f1;
+  border-radius: 6px;
+  padding: 12px 15px;
+  margin: 6px 0;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.account-card h5 {
+  margin: 0 0 4px 0;
+  color: #2c3e50;
+}
+
+.account-card p {
+  margin: 2px 0;
+  color: #7f8c8d;
+  font-size: 14px;
+}
+
+.no-accounts {
+  color: #7f8c8d;
+  font-style: italic;
+  padding-left: 10px;
+  margin-top: 8px;
+}
+
+/* Reused styles */
+.alert {
+  padding: 15px;
+  border-radius: 6px;
+  margin-bottom: 20px;
+}
+
+.alert-info {
+  background-color: #d1ecf1;
+  border: 1px solid #bee5eb;
+  color: #0c5460;
+}
+
+.alert-danger {
+  background-color: #f8d7da;
+  border: 1px solid #f5c6cb;
+  color: #721c24;
+}
+
+.loading {
+  text-align: center;
+  padding: 40px;
+  color: #7f8c8d;
+  font-size: 18px;
+}
+
+/* Buttons */
+.btn {
+  padding: 8px 14px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.btn-danger {
+  background-color: #e74c3c;
+  color: #fff;
+}
+
+.btn-danger:hover {
+  background-color: #c0392b;
+}
+
+.btn-sm {
+  padding: 6px 10px;
+  font-size: 13px;
+}
