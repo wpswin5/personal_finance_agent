@@ -8,6 +8,13 @@ const AccountConnections = ({ token, plaidConnected }) => {
   const [error, setError] = useState(null);
   const [expanded, setExpanded] = useState({}); // Track open/closed connections
 
+  // --- new nickname modal state ---
+  const [nicknameModalOpen, setNicknameModalOpen] = useState(false);
+  const [selectedAccount, setSelectedAccount] = useState(null);
+  const [nicknameInput, setNicknameInput] = useState("");
+  const [savingNickname, setSavingNickname] = useState(false);
+  // --------------------------------
+
   // Fetch user ID
   const fetchUserId = async () => {
     const response = await axios.get("http://localhost:8000/user/id", {
@@ -51,6 +58,55 @@ const AccountConnections = ({ token, plaidConnected }) => {
       setError(err.message);
     }
   };
+
+  // --- new nickname handlers ---
+  const handleAddNicknameClick = (account) => {
+    setSelectedAccount(account);
+    setNicknameInput(account.nickname || "");
+    setNicknameModalOpen(true);
+  };
+
+  const handleNicknameSubmit = async () => {
+    if (!selectedAccount) return;
+    setSavingNickname(true);
+    try {
+      const res = await fetch(`http://localhost:8000/accounts/${selectedAccount.id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ nickname: nicknameInput }),
+      });
+
+      if (!res.ok) {
+        const text = await res.text().catch(() => null);
+        throw new Error(text || res.statusText || `HTTP ${res.status}`);
+      }
+
+      // Update the account locally
+      setConnections((prev) =>
+        prev.map((conn) => ({
+          ...conn,
+          accounts: conn.accounts.map((acc) =>
+            acc.account_id === selectedAccount.account_id
+              ? { ...acc, nickname: nicknameInput }
+              : acc
+          ),
+        }))
+      );
+
+      setNicknameModalOpen(false);
+      setSelectedAccount(null);
+      setNicknameInput("");
+    } catch (err) {
+      console.error("Failed to update nickname:", err);
+      alert("Failed to update nickname. " + (err.message || "Please try again."));
+    } finally {
+      setSavingNickname(false);
+    }
+  };
+  // --------------------------------
 
   const toggleExpand = (id) => {
     setExpanded((prev) => ({
@@ -111,7 +167,7 @@ const AccountConnections = ({ token, plaidConnected }) => {
                     {connection.accounts?.length > 0 ? (
                       connection.accounts.map((account) => (
                         <div key={account.account_id} className="account-card">
-                          <h5>{account.name}</h5>
+                          <h5>{account.nickname || account.name}</h5>
                           <p>
                             Type: {account.type}{" "}
                             {account.subtype && `(${account.subtype})`}
@@ -119,6 +175,12 @@ const AccountConnections = ({ token, plaidConnected }) => {
                           <p>
                             Balance: ${account.balance_current.toFixed(2)} {account.currency}
                           </p>
+                          <button
+                            className="btn btn-secondary btn-sm"
+                            onClick={() => handleAddNicknameClick(account)}
+                          >
+                            Add Nickname
+                          </button>
                         </div>
                       ))
                     ) : (
@@ -131,6 +193,45 @@ const AccountConnections = ({ token, plaidConnected }) => {
           </div>
         )}
       </div>
+
+      {/* --- nickname modal --- */}
+      {nicknameModalOpen && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <h3>Add Nickname</h3>
+            <p>
+              Account: <strong>{selectedAccount?.name}</strong>
+            </p>
+            <input
+              type="text"
+              value={nicknameInput}
+              onChange={(e) => setNicknameInput(e.target.value)}
+              placeholder="Enter nickname"
+              className="nickname-input"
+            />
+            <div className="modal-actions">
+              <button
+                type="button"
+                onClick={() => {
+                  setNicknameModalOpen(false);
+                  setSelectedAccount(null);
+                }}
+                disabled={savingNickname}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleNicknameSubmit}
+                disabled={savingNickname}
+              >
+                {savingNickname ? "Saving..." : "Save"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* ---------------------- */}
     </div>
   );
 };

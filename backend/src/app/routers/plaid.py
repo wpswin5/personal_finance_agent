@@ -19,8 +19,8 @@ from app.models.plaid_models import (
     SyncItemRequest
 )
 from app.db import get_connection
-from app.services.plaid_service import plaid_service
-from app.services.plaid_db_service import plaid_db_service
+from app.external_services.plaid_service import plaid_service
+from app.repositories.plaid_respository import plaid_repository
 from app.security.utils import get_verified_token
 from app.security.access_token import AccessToken
 
@@ -37,7 +37,7 @@ async def create_link_token(
     try:
         print("Calling create_link_token")
         # Get user ID from database using Auth0 sub
-        user_id = plaid_db_service.get_user_id_by_sub(token.sub)
+        user_id = plaid_repository.get_user_id_by_sub(token.sub)
         if not user_id:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -69,7 +69,7 @@ async def exchange_public_token(
     """Exchange public token for access token and store in database."""
     try:
         # Get user ID from database using Auth0 sub
-        user_id = plaid_db_service.get_user_id_by_sub(token.sub)
+        user_id = plaid_repository.get_user_id_by_sub(token.sub)
         if not user_id:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -88,7 +88,7 @@ async def exchange_public_token(
         print("Got institution name", institution_name)
         
         # Store encrypted access token in database
-        plaid_user_id = plaid_db_service.create_plaid_user(
+        plaid_user_id = plaid_repository.create_plaid_user(
             user_id=user_id,
             access_token=access_token,
             item_id=item_id,
@@ -116,7 +116,7 @@ async def get_accounts(
     """Get accounts for the authenticated user."""
     try:
         # Get user ID from database using Auth0 sub
-        user_id = plaid_db_service.get_user_id_by_sub(token.sub)
+        user_id = plaid_repository.get_user_id_by_sub(token.sub)
         if not user_id:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -125,14 +125,14 @@ async def get_accounts(
         
         # Get Plaid user record
         if plaid_user_ids:
-            plaid_users = plaid_db_service.get_all_plaid_users_for_user(user_id)
+            plaid_users = plaid_repository.get_all_plaid_users_for_user(user_id)
             if not plaid_users or len(plaid_users) == 0:
                 raise HTTPException(
                     status_code=status.HTTP_404_NOT_FOUND,
                     detail="Plaid connection not found"
                 )
         else:
-            plaid_users = plaid_db_service.get_all_plaid_users_for_user(user_id)
+            plaid_users = plaid_repository.get_all_plaid_users_for_user(user_id)
             print("Users: ", plaid_users)
             if not plaid_users:
                 raise HTTPException(
@@ -175,7 +175,7 @@ async def get_transactions(
     """Get transactions for the authenticated user."""
     try:
         # Get user ID from database using Auth0 sub
-        user_id = plaid_db_service.get_user_id_by_sub(token.sub)
+        user_id = plaid_repository.get_user_id_by_sub(token.sub)
         if not user_id:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -184,14 +184,14 @@ async def get_transactions(
         
         # Get Plaid user record
         if plaid_user_id:
-            plaid_user = plaid_db_service.get_plaid_user_by_user_id(user_id)
+            plaid_user = plaid_repository.get_plaid_user_by_user_id(user_id)
             if not plaid_user or plaid_user.id != plaid_user_id:
                 raise HTTPException(
                     status_code=status.HTTP_404_NOT_FOUND,
                     detail="Plaid connection not found"
                 )
         else:
-            plaid_user = plaid_db_service.get_plaid_user_by_user_id(user_id)
+            plaid_user = plaid_repository.get_plaid_user_by_user_id(user_id)
             if not plaid_user:
                 raise HTTPException(
                     status_code=status.HTTP_404_NOT_FOUND,
@@ -242,7 +242,7 @@ async def get_plaid_connections(
     """Get all Plaid connections for the authenticated user."""
     try:
         # Get user ID from database using Auth0 sub
-        user_id = plaid_db_service.get_user_id_by_sub(token.sub)
+        user_id = plaid_repository.get_user_id_by_sub(token.sub)
         if not user_id:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -250,7 +250,7 @@ async def get_plaid_connections(
             )
         
         # Get all Plaid connections for the user
-        plaid_users = plaid_db_service.get_all_plaid_users_for_user(user_id)
+        plaid_users = plaid_repository.get_all_plaid_users_for_user(user_id)
         
         # Don't return the actual access tokens in the response
         for plaid_user in plaid_users:
@@ -275,7 +275,7 @@ async def delete_plaid_connection(
     """Delete a Plaid connection for the authenticated user."""
     try:
         # Get user ID from database using Auth0 sub
-        user_id = plaid_db_service.get_user_id_by_sub(token.sub)
+        user_id = plaid_repository.get_user_id_by_sub(token.sub)
         if not user_id:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -283,7 +283,7 @@ async def delete_plaid_connection(
             )
         
         # Verify the Plaid connection belongs to the user
-        plaid_user = plaid_db_service.get_plaid_user_by_user_id(user_id)
+        plaid_user = plaid_repository.get_plaid_user_by_user_id(user_id)
         if not plaid_user or plaid_user.id != plaid_user_id:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -291,7 +291,7 @@ async def delete_plaid_connection(
             )
         
         # Delete the Plaid connection
-        success = plaid_db_service.delete_plaid_user(plaid_user_id)
+        success = plaid_repository.delete_plaid_user(plaid_user_id)
         
         if not success:
             raise HTTPException(

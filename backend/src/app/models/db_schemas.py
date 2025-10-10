@@ -13,11 +13,14 @@ class AccountBase(BaseModel):
     subtype: Optional[str]
     balance_current: Optional[float]
     currency: str = "USD"
+    nickname: Optional[str] = None
 
 
 class AccountCreate(AccountBase):
     plaid_user_id: int
 
+class AccountUpdate(BaseModel):
+    nickname: Optional[str] = None
 
 class AccountRead(AccountBase):
     id: int

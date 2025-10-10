@@ -60,6 +60,7 @@ class Account(Base):
     subtype = Column(String, nullable=True)
     balance_current = Column(Float, nullable=True)
     currency = Column(String, nullable=True)
+    nickname = Column(String, nullable=True)
 
     # ✅ back reference to PlaidUser
     plaid_user = relationship(lambda: PlaidUser, back_populates="accounts")

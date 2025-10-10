@@ -4,7 +4,7 @@ import json
 from datetime import datetime, timedelta
 from typing import List, Optional, Dict, Any
 from plaid.api import plaid_api
-from plaid.model.transactions_get_request import TransactionsGetRequest
+from plaid.model.transactions_sync_request import TransactionsSyncRequest
 from plaid.model.accounts_get_request import AccountsGetRequest
 from plaid.model.item_public_token_exchange_request import ItemPublicTokenExchangeRequest
 from plaid.model.link_token_create_request import LinkTokenCreateRequest
@@ -131,10 +131,8 @@ class PlaidService:
             if not end_date:
                 end_date = datetime.now()
             
-            request = TransactionsGetRequest(
-                access_token=decrypted_token,
-                start_date=start_date.date(),
-                end_date=end_date.date()
+            request = TransactionsSyncRequest(
+                access_token=decrypted_token
                 #count=count,
                 #offset=offset
             )
@@ -142,10 +140,11 @@ class PlaidService:
             if account_ids:
                 request.account_ids = account_ids
             
-            response = self.client.transactions_get(request)
+            response = self.client.transactions_sync(request)
+            print(response)
             
             transactions = []
-            for transaction in response['transactions']:
+            for transaction in response['added']:
                 plaid_transaction = PlaidTransaction(
                     transaction_id=transaction['transaction_id'],
                     account_id=transaction['account_id'],

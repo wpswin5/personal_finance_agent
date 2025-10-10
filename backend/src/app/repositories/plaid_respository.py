@@ -7,7 +7,7 @@ from app.security.encryption import encryption_service
 
 logger = logging.getLogger(__name__)
 
-class PlaidDBService:
+class PlaidRepository:
     """Service for managing Plaid user data in the database."""
     
     def create_plaid_user(
@@ -203,4 +203,4 @@ class PlaidDBService:
             raise Exception(f"Failed to get user: {str(e)}")
 
 # Global instance
-plaid_db_service = PlaidDBService()
+plaid_repository = PlaidRepository()
