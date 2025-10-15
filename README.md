@@ -5,6 +5,7 @@ This is a starter repo structure for an **AI-powered personal finance agent**.
 ## Features (planned)
 
 - Upload transaction CSVs
+- Connect to plaid
 - Classify transactions into categories
 - Detect anomalies (unusual spend)
 - Summarize financial insights
