@@ -20,7 +20,8 @@ from app.models.plaid_models import (
 )
 from app.db import get_connection
 from app.external_services.plaid_service import plaid_service
-from app.repositories.plaid_respository import plaid_repository
+from app.repositories.plaid_repository import plaid_repository
+from app.repositories.user_repository import user_repository
 from app.security.utils import get_verified_token
 from app.security.access_token import AccessToken
 
@@ -37,7 +38,7 @@ async def create_link_token(
     try:
         print("Calling create_link_token")
         # Get user ID from database using Auth0 sub
-        user_id = plaid_repository.get_user_id_by_sub(token.sub)
+        user_id = user_repository.get_id(token.sub)
         if not user_id:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -69,7 +70,7 @@ async def exchange_public_token(
     """Exchange public token for access token and store in database."""
     try:
         # Get user ID from database using Auth0 sub
-        user_id = plaid_repository.get_user_id_by_sub(token.sub)
+        user_id = user_repository.get_id(token.sub)
         if not user_id:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -116,7 +117,7 @@ async def get_accounts(
     """Get accounts for the authenticated user."""
     try:
         # Get user ID from database using Auth0 sub
-        user_id = plaid_repository.get_user_id_by_sub(token.sub)
+        user_id = user_repository.get_id(token.sub)
         if not user_id:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -175,7 +176,7 @@ async def get_transactions(
     """Get transactions for the authenticated user."""
     try:
         # Get user ID from database using Auth0 sub
-        user_id = plaid_repository.get_user_id_by_sub(token.sub)
+        user_id = user_repository.get_id(token.sub)
         if not user_id:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -242,7 +243,8 @@ async def get_plaid_connections(
     """Get all Plaid connections for the authenticated user."""
     try:
         # Get user ID from database using Auth0 sub
-        user_id = plaid_repository.get_user_id_by_sub(token.sub)
+        user_id = user_repository.get_id(token.sub)
+        print("User id: ", user_id)
         if not user_id:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -275,7 +277,7 @@ async def delete_plaid_connection(
     """Delete a Plaid connection for the authenticated user."""
     try:
         # Get user ID from database using Auth0 sub
-        user_id = plaid_repository.get_user_id_by_sub(token.sub)
+        user_id = user_repository.get_id(token.sub)
         if not user_id:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -322,11 +324,10 @@ async def sync_item(request: SyncItemRequest, db=Depends(get_connection)):
     cursor = db.cursor()
 
     # 1. Lookup access_token
-    cursor.execute("SELECT access_token FROM plaid_users WHERE item_id = ?", (item_id,))
-    row = cursor.fetchone()
-    if not row:
-        raise HTTPException(status_code=404, detail="Item not found")
-    access_token = row[0]
+    plaid_user = plaid_repository.get_plaid_user_by_item_id(item_id)
+    if not plaid_user:
+        raise HTTPException(status_code=404, detail="Plaid user not found")
+    access_token = plaid_user.access_token
 
     # 2. Fetch Accounts (via PlaidService wrapper)
     accounts = plaid_service.get_accounts(access_token)
