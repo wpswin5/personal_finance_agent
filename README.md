@@ -27,3 +27,4 @@ Visit http://localhost:8000/docs for interactive API docs.
 - Connect to Azure SQL Database
 - Implement classification & anomaly models
 - Wire conversational agent to Azure OpenAI + LangChain
+- Test readme update for PR process
