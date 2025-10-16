@@ -36,6 +36,7 @@ class PlaidUser(Base):
     user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
     access_token = Column(String, nullable=True)  # encrypted
     item_id = Column(String, nullable=True)       # encrypted
+    cursor = Column(String, nullable=True)       # Plaid transactions sync cursor
     institution_name = Column(String)                   # encrypted
 
     # ✅ back reference to User
@@ -66,6 +67,28 @@ class Account(Base):
     plaid_user = relationship(lambda: PlaidUser, back_populates="accounts")
 
     household_account = relationship(lambda: HouseholdAccount, back_populates="account")
+
+
+class Transaction(Base):
+    __tablename__ = "transactions"
+
+    id = Column(Integer, primary_key=True, index=True)
+    # account_id references the Plaid account identifier (accounts.account_id)
+    # The DB has a foreign key constraint on accounts.account_id, which is a string.
+    account_id = Column(String, ForeignKey("accounts.account_id"), nullable=False)
+    transaction_id = Column(String, unique=True, index=True)
+    amount = Column(Float, nullable=False)
+    date_posted = Column(DateTime, nullable=False)
+    date_transacted = Column(DateTime, nullable=True)
+    description = Column(String, nullable=True)
+    merchant_name = Column(String, nullable=True)
+    iso_currency_code = Column(String, nullable=True)
+    category = Column(String, nullable=True)
+    manual_category = Column(String, nullable=True)
+    is_pending = Column(Integer, default=0)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    account = relationship(lambda: Account)
 
 class Household(Base):
     __tablename__ = "households"
