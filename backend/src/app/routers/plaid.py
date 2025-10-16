@@ -163,78 +163,10 @@ async def get_accounts(
             detail=f"Failed to get accounts: {str(e)}"
         )
 
-@router.get("/transactions", response_model=PlaidTransactionsResponse)
-async def get_transactions(
-    start_date: Optional[str] = None,
-    end_date: Optional[str] = None,
-    account_ids: Optional[str] = None,
-    count: int = 100,
-    offset: int = 0,
-    plaid_user_id: Optional[int] = None,
-    token: AccessToken = Depends(get_verified_token)
-):
-    """Get transactions for the authenticated user."""
-    try:
-        # Get user ID from database using Auth0 sub
-        user_id = user_repository.get_id(token.sub)
-        if not user_id:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="User not found"
-            )
-        
-        # Get Plaid user record
-        if plaid_user_id:
-            plaid_user = plaid_repository.get_plaid_user_by_user_id(user_id)
-            if not plaid_user or plaid_user.id != plaid_user_id:
-                raise HTTPException(
-                    status_code=status.HTTP_404_NOT_FOUND,
-                    detail="Plaid connection not found"
-                )
-        else:
-            plaid_user = plaid_repository.get_plaid_user_by_user_id(user_id)
-            if not plaid_user:
-                raise HTTPException(
-                    status_code=status.HTTP_404_NOT_FOUND,
-                    detail="No Plaid connection found for user"
-                )
-        
-        # Parse dates
-        start_dt = None
-        end_dt = None
-        if start_date:
-            start_dt = datetime.fromisoformat(start_date.replace('Z', '+00:00'))
-        if end_date:
-            end_dt = datetime.fromisoformat(end_date.replace('Z', '+00:00'))
-        
-        # Parse account IDs
-        account_id_list = None
-        if account_ids:
-            account_id_list = account_ids.split(',')
-        
-        # Get transactions from Plaid
-        transactions = plaid_service.get_transactions(
-            access_token=plaid_user.access_token,
-            start_date=start_dt,
-            end_date=end_dt,
-            account_ids=account_id_list,
-            count=count,
-            offset=offset
-        )
-        
-        return PlaidTransactionsResponse(
-            transactions=transactions,
-            total_transactions=len(transactions)
-        )
-        
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f"Error getting transactions: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to get transactions: {str(e)}"
-        )
+# NOTE: The GET /transactions endpoint was removed in favor of the POST /sync_item
+# endpoint which is the canonical source of truth for transactions sync. Use
+# POST /sync_item to run the Plaid incremental transactions/sync cursor loop and
+# upsert results into the database.
 
 @router.get("/connections", response_model=List[PlaidUser])
 async def get_plaid_connections(
@@ -313,80 +245,18 @@ async def delete_plaid_connection(
         )
 
 @router.post("/sync_item")
-async def sync_item(request: SyncItemRequest, db=Depends(get_connection)):
-    """
-    Sync accounts + transactions for a given Plaid item.
-    - Fetch access_token from DB
-    - Call PlaidService (accounts + transactions)
-    - Upsert results into Azure SQL (deduplicated with MERGE)
+async def sync_item(request: SyncItemRequest):
+    """Sync accounts + transactions for a given Plaid item using the repository sync helper.
+
+    The repository implements Plaid's transactions/sync incremental cursor flow and upserts
+    accounts and transactions into the DB.
     """
     item_id = request.item_id
-    cursor = db.cursor()
-
-    # 1. Lookup access_token
-    plaid_user = plaid_repository.get_plaid_user_by_item_id(item_id)
-    if not plaid_user:
-        raise HTTPException(status_code=404, detail="Plaid user not found")
-    access_token = plaid_user.access_token
-
-    # 2. Fetch Accounts (via PlaidService wrapper)
-    accounts = plaid_service.get_accounts(access_token)
-    for acct in accounts:
-        cursor.execute("""
-            MERGE accounts AS target
-            USING (SELECT ? AS account_id) AS source
-            ON target.account_id = source.account_id
-            WHEN MATCHED THEN
-                UPDATE SET name=?, type=?, subtype=?, balance_current=?, currency=?
-            WHEN NOT MATCHED THEN
-                INSERT (account_id, plaid_user_id, name, type, subtype, balance_current, currency)
-                VALUES (?, (SELECT id FROM plaid_users WHERE item_id=?), ?, ?, ?, ?, ?);
-        """, (
-            acct.account_id,
-            acct.name,
-            acct.type,
-            acct.subtype,
-            acct.balance,
-            acct.currency,
-            acct.account_id,
-            item_id,
-            acct.name,
-            acct.type,
-            acct.subtype,
-            acct.balance,
-            acct.currency,
-        ))
-
-    # 3. Fetch Transactions (last 30 days default)
-    transactions = plaid_service.get_transactions(access_token)
-    for tx in transactions:
-        print(tx)
-        cursor.execute("""
-            MERGE transactions AS target
-            USING (SELECT ? AS transaction_id) AS source
-            ON target.transaction_id = source.transaction_id
-            WHEN MATCHED THEN
-                UPDATE SET amount=?, created_at=?, merchant_name=?, description=?, is_pending=?, category=?
-            WHEN NOT MATCHED THEN
-                INSERT (transaction_id, account_id, amount, date_posted, merchant_name, description, is_pending, category)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?);
-        """, (
-            tx.transaction_id,
-            tx.amount,
-            tx.date,
-            tx.merchant_name,
-            tx.name,
-            tx.pending,
-            ",".join(tx.category) if tx.category else None,
-            tx.transaction_id,
-            tx.account_id,
-            tx.amount,
-            tx.date,
-            tx.merchant_name,
-            tx.name,
-            tx.pending,
-            ",".join(tx.category) if tx.category else None,
-        ))
-
-    db.commit()
-    return {"status": "ok", "item_id": item_id, "accounts_synced": len(accounts), "transactions_synced": len(transactions)}
+    try:
+        result = plaid_repository.sync_item_transactions(item_id)
+        return {"status": "ok", "item_id": item_id, **result}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error syncing item {item_id}: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to sync item: {str(e)}")

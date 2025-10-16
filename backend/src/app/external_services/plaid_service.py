@@ -111,16 +111,22 @@ class PlaidService:
             logger.error(f"Error getting accounts: {e}")
             raise Exception(f"Failed to get accounts: {str(e)}")
     
-    def get_transactions(
+    def sync_transactions(
         self, 
         access_token: str, 
         start_date: datetime = None, 
         end_date: datetime = None,
         account_ids: Optional[List[str]] = None,
         count: int = 100,
-        offset: int = 0
-    ) -> List[PlaidTransaction]:
-        """Get transactions for a given access token."""
+        offset: int = 0,
+        cursor: Optional[str] = None,
+    ) -> Dict[str, Any]:
+        """Run Plaid incremental transactions/sync cursor loop and return {'transactions': [...], 'cursor': final_cursor}.
+
+        This method always performs the incremental sync (cursor loop) and returns a dict
+        with the added transactions and the final cursor. It no longer supports the
+        legacy single-call list return format.
+        """
         try:
             # Decrypt the access token if it's encrypted
             decrypted_token = encryption_service.decrypt(access_token)
@@ -131,33 +137,53 @@ class PlaidService:
             if not end_date:
                 end_date = datetime.now()
             
-            request = TransactionsSyncRequest(
-                access_token=decrypted_token
-                #count=count,
-                #offset=offset
-            )
-            
-            if account_ids:
-                request.account_ids = account_ids
-            
-            response = self.client.transactions_sync(request)
-            print(response)
-            
+            # Always run the incremental sync loop and collect all 'added' transactions
+            all_added = []
+            next_cursor = cursor
+            while True:
+                req = TransactionsSyncRequest(access_token=decrypted_token)
+                if next_cursor:
+                    req.cursor = next_cursor
+                if account_ids:
+                    req.account_ids = account_ids
+                if count:
+                    req.count = count
+
+                response = self.client.transactions_sync(req).to_dict()
+
+                added = response.get('added', [])
+                all_added.extend(added)
+
+                has_more = response.get('has_more', False)
+                next_cursor = response.get('next_cursor') or response.get('cursor')
+
+                if not has_more:
+                    break
+
+            # map to PlaidTransaction objects
             transactions = []
-            for transaction in response['added']:
+            for transaction in all_added:
+                # category: prefer personal_finance_category.primary, else category list
+                category_val = None
+                if transaction.get('personal_finance_category'):
+                    pfc = transaction.get('personal_finance_category')
+                    category_val = [pfc.get('primary')] if pfc else None
+                elif transaction.get('category'):
+                    category_val = transaction.get('category')
+
                 plaid_transaction = PlaidTransaction(
-                    transaction_id=transaction['transaction_id'],
-                    account_id=transaction['account_id'],
-                    amount=transaction['amount'],
-                    date=transaction['date'],
-                    name=transaction['name'],
+                    transaction_id=transaction.get('transaction_id'),
+                    account_id=transaction.get('account_id'),
+                    amount=transaction.get('amount'),
+                    date=transaction.get('date'),
+                    name=transaction.get('name'),
                     merchant_name=transaction.get('merchant_name'),
-                    category=[ transaction.personal_finance_category.primary ],
+                    category=category_val or [],
                     pending=transaction.get('pending', False)
                 )
                 transactions.append(plaid_transaction)
 
-            return transactions
+            return {"transactions": transactions, "cursor": next_cursor}
             
         except ApiException as e:
             logger.error(f"Error getting transactions: {e}")
