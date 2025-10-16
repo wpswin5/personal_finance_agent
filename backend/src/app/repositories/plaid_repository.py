@@ -54,6 +54,13 @@ class PlaidRepository:
         try:
             with get_db_session() as db:
                 plaid_user = db.query(PlaidUser).filter(PlaidUser.user_id == user_id).first()
+                # Decrypt access_token immediately after DB retrieval so callers always get plaintext
+                if plaid_user and hasattr(plaid_user, 'access_token') and plaid_user.access_token:
+                    try:
+                        plaid_user.access_token = encryption_service.decrypt(plaid_user.access_token)
+                    except Exception:
+                        # If decryption fails, leave the token as-is to surface the error later
+                        logger.exception("Failed to decrypt access token for plaid_user (user_id=%s)", user_id)
                 return plaid_user
         except pyodbc.Error as e:
             logger.error(f"Database error getting Plaid user by user ID: {e}")
@@ -64,6 +71,9 @@ class PlaidRepository:
         try:
             with get_db_session() as db:
                 plaid_user = db.query(PlaidUser).filter(PlaidUser.item_id == item_id).first()
+                if plaid_user and hasattr(plaid_user, 'access_token'):
+                    # Decrypt the access token before returning
+                    plaid_user.access_token = encryption_service.decrypt(plaid_user.access_token)
                 return plaid_user
         except pyodbc.Error as e:
             logger.error(f"Database error getting Plaid user by item ID: {e}")
@@ -75,6 +85,13 @@ class PlaidRepository:
             with get_db_session() as db:
                 print("Getting all Plaid users for user id: ", user_id)
                 plaid_users = db.query(PlaidUser).filter(PlaidUser.user_id == user_id).all()
+                # Decrypt access_token on each record
+                for pu in plaid_users:
+                    if hasattr(pu, 'access_token') and pu.access_token:
+                        try:
+                            pu.access_token = encryption_service.decrypt(pu.access_token)
+                        except Exception:
+                            logger.exception("Failed to decrypt access token for plaid_user id=%s", getattr(pu, 'id', None))
                 return plaid_users
         except pyodbc.Error as e:
             logger.error(f"Database error getting all Plaid users for user: {e}")
@@ -314,11 +331,71 @@ class PlaidRepository:
 
                     existing = db.query(Transaction).filter(Transaction.transaction_id == tx.get('transaction_id')).first()
                     posted_at = tx.get('date')
-                    if isinstance(posted_at, str):
-                        try:
-                            posted_at = datetime.fromisoformat(posted_at)
-                        except Exception:
-                            posted_at = datetime.strptime(posted_at, "%Y-%m-%d")
+                    # Normalize posted_at into a timezone-aware datetime (UTC).
+                    # Accepts: datetime, date, ISO strings (with Z or timezone), and
+                    # strings with >6 fractional second digits (truncates to microseconds).
+                    def _to_datetime(val):
+                        if val is None:
+                            return None
+                        # already a datetime
+                        if isinstance(val, datetime):
+                            if val.tzinfo is None:
+                                return val.replace(tzinfo=timezone.utc)
+                            return val
+                        # plain date -> convert to midnight UTC
+                        if isinstance(val, date):
+                            return datetime.combine(val, datetime.min.time()).replace(tzinfo=timezone.utc)
+                        # parse strings
+                        if isinstance(val, str):
+                            s = val
+                            # normalize Z suffix
+                            if s.endswith('Z'):
+                                s = s[:-1] + '+00:00'
+
+                            # handle long fractional seconds: ensure at most 6 digits
+                            if '.' in s:
+                                # split fractional and timezone parts
+                                main, frac_tz = s.split('.', 1)
+                                # frac_tz may contain timezone (+/-) or nothing
+                                tz_idx = None
+                                for idx, ch in enumerate(frac_tz):
+                                    if ch in ['+', '-']:
+                                        tz_idx = idx
+                                        break
+                                if tz_idx is not None:
+                                    frac = frac_tz[:tz_idx]
+                                    tz = frac_tz[tz_idx:]
+                                else:
+                                    # no explicit tz in frac_tz
+                                    frac = frac_tz
+                                    tz = ''
+                                # remove any trailing Z
+                                if frac.endswith('Z'):
+                                    frac = frac[:-1]
+                                if len(frac) > 6:
+                                    frac = frac[:6]
+                                s = main + '.' + frac + tz
+
+                            try:
+                                dt = datetime.fromisoformat(s)
+                                if dt.tzinfo is None:
+                                    dt = dt.replace(tzinfo=timezone.utc)
+                                return dt
+                            except Exception:
+                                # fallback to date-only
+                                try:
+                                    dt = datetime.strptime(s, '%Y-%m-%d')
+                                    return dt.replace(tzinfo=timezone.utc)
+                                except Exception:
+                                    raise
+
+                        # unknown type - return as-is
+                        return val
+
+                    # imports used by helper
+                    from datetime import timezone, date
+
+                    posted_at = _to_datetime(posted_at)
 
                     if existing:
                         existing.amount = tx.get('amount')
@@ -329,7 +406,7 @@ class PlaidRepository:
                         existing.category = ','.join(tx.get('category')) if tx.get('category') and isinstance(tx.get('category'), list) else (tx.get('category') or None)
                     else:
                         new_tx = Transaction(
-                            account_id=account.id,
+                            account_id=account.account_id,
                             transaction_id=tx.get('transaction_id'),
                             amount=tx.get('amount'),
                             date_posted=posted_at,
@@ -348,7 +425,7 @@ class PlaidRepository:
             logger.error(f"Error upserting transactions: {e}")
             raise
 
-    def sync_item_transactions(self, item_id: str, plaid_service) -> dict:
+    def sync_item_transactions(self, item_id: str) -> dict:
         """Run Plaid transactions/sync for the given item_id and persist results.
 
         Uses Plaid's incremental sync cursor loop. Returns counts.
@@ -378,8 +455,8 @@ class PlaidRepository:
         total_tx_synced = 0
 
         while True:
-            # build request
-            req = TransactionsSyncRequest(access_token=plaid_service.security.decrypt(plaid_user.access_token) if hasattr(plaid_service, 'security') else plaid_user.access_token)
+            # build request — `get_plaid_user_by_item_id` decrypts the token at the DB boundary, so use it directly
+            req = TransactionsSyncRequest(access_token=plaid_user.access_token)
             if cursor:
                 req.cursor = cursor
 

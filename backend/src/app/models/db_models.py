@@ -73,7 +73,9 @@ class Transaction(Base):
     __tablename__ = "transactions"
 
     id = Column(Integer, primary_key=True, index=True)
-    account_id = Column(Integer, ForeignKey("accounts.id"), nullable=False)
+    # account_id references the Plaid account identifier (accounts.account_id)
+    # The DB has a foreign key constraint on accounts.account_id, which is a string.
+    account_id = Column(String, ForeignKey("accounts.account_id"), nullable=False)
     transaction_id = Column(String, unique=True, index=True)
     amount = Column(Float, nullable=False)
     date_posted = Column(DateTime, nullable=False)

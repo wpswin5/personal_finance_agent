@@ -17,7 +17,7 @@ from plaid.exceptions import ApiException
 
 from app.config import get_settings
 from app.models.plaid_models import PlaidAccount, PlaidTransaction
-from app.security.encryption import encryption_service
+# Tokens are decrypted at the DB boundary by the repository; this service expects plaintext tokens
 
 logger = logging.getLogger(__name__)
 
@@ -87,10 +87,8 @@ class PlaidService:
     def get_accounts(self, access_token: str) -> List[PlaidAccount]:
         """Get accounts for a given access token."""
         try:
-            # Decrypt the access token if it's encrypted
-            decrypted_token = encryption_service.decrypt(access_token)
-            
-            request = AccountsGetRequest(access_token=decrypted_token)
+            # PlaidRepository now decrypts tokens at the DB boundary. This service expects a plaintext token.
+            request = AccountsGetRequest(access_token=access_token)
             response = self.client.accounts_get(request)
             
             accounts = []
@@ -128,8 +126,8 @@ class PlaidService:
         legacy single-call list return format.
         """
         try:
-            # Decrypt the access token if it's encrypted
-            decrypted_token = encryption_service.decrypt(access_token)
+            # PlaidRepository now decrypts tokens at the DB boundary. This service expects a plaintext token.
+            decrypted_token = access_token
             
             # Default to last 30 days if no dates provided
             if not start_date:
