@@ -9,8 +9,7 @@ from auth0.exceptions import Auth0Error
 from app.security.utils import verify_token
 from app.dependencies import get_auth0_users_client, get_auth0_management_client, authentication, management
 from app.config import get_settings, Settings
-from app.db import upsert_user
-from app.db import get_id
+from app.repositories.user_repository import user_repository
 
 router = APIRouter()
 
@@ -23,7 +22,7 @@ async def get_current_user_id(
 ) -> int:
     try:
         userinfo = auth0_users.userinfo(access_token=access_token)
-        user_id = get_id(userinfo.get("sub"))
+        user_id = user_repository.get_id(userinfo.get("sub"))
         print("User id: ", user_id)
     except Auth0Error as e:
         raise HTTPException(status_code=e.status_code, detail=e.message)
@@ -38,7 +37,7 @@ async def read_user_me(
 ) -> dict:
     try:
         userinfo = auth0_users.userinfo(access_token=access_token)
-        upsert_user(userinfo)
+        user_repository.upsert_user(userinfo)
     except Auth0Error as e:
         raise HTTPException(status_code=e.status_code, detail=e.message)
     except:
@@ -105,20 +104,5 @@ async def delete_user(
 # @router.get("/me")
 async def get_me(user: dict=Depends(verify_token)):
     # Persist user if first login
-    print("getting user info")
-    sub = user["sub"]
-    email = user.get("email")
-    with get_connection() as conn:
-        print("sql conn open")
-        cursor = conn.cursor()
-        cursor.execute("SELECT COUNT(1) FROM users WHERE sub = ?", sub)
-        exists = cursor.fetchone()[0]
-        if not exists:
-            cursor.execute(
-                "INSERT INTO users (sub, email, name) VALUES (?, ?, ?)",
-                sub,
-                email,
-                user.get("name")
-            )
-            conn.commit()
-    return {"sub": sub, "email": email}
+    user_repository.upsert_user(user)
+    return user
