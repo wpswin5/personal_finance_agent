@@ -1,10 +1,10 @@
 import os
 import pyodbc
 import datetime
-from dotenv import load_dotenv
+from app.config import get_settings
 
-load_dotenv()
-conn = pyodbc.connect(os.getenv("AZURE_SQL_CONN"))
+settings = get_settings()
+conn = pyodbc.connect(settings.AZURE_SQL_CONN)
 cursor = conn.cursor()
 
 # Lookup categories

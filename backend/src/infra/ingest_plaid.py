@@ -4,9 +4,9 @@ import json
 import datetime as dt
 import time
 from typing import List, Dict
-from dotenv import load_dotenv
+from app.config import get_settings
 
-load_dotenv()
+settings = get_settings()
 
 import plaid
 from plaid.api import plaid_api
@@ -21,8 +21,8 @@ from plaid.model.sandbox_transactions_create_request import SandboxTransactionsC
 
 from transaction_generator import generate_fake_transactions
 
-PLAID_CLIENT_ID = os.getenv("PLAID_CLIENT_ID")
-PLAID_SECRET = os.getenv("PLAID_SECRET")
+PLAID_CLIENT_ID = settings.PLAID_CLIENT_ID
+PLAID_SECRET = settings.PLAID_SECRET
 
 if not PLAID_CLIENT_ID or not PLAID_SECRET:
     raise RuntimeError("Set PLAID_CLIENT_ID and PLAID_SECRET in your environment.")
@@ -94,7 +94,7 @@ def fetch_all_transactions(access_token: str, count: int = 100):
 
 def insert_transactions_sql(transactions: list[dict]):
     print("Trying to connect to SQL Server")
-    with pyodbc.connect(os.getenv("AZURE_SQL_CONN")) as conn:
+    with pyodbc.connect(settings.AZURE_SQL_CONN) as conn:
         print("Connected to SQL server")
         cursor = conn.cursor()
         print(len(transactions))

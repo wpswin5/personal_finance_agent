@@ -1,10 +1,11 @@
 import pyodbc
-import os
-
 from datetime import datetime
+from app.config import get_settings
+
 
 def get_connection():
-    conn_str = os.getenv("AZURE_SQL_CONN")
+    settings = get_settings()
+    conn_str = settings.AZURE_SQL_CONN
     return pyodbc.connect(conn_str)
 
 
