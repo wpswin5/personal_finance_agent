@@ -30,6 +30,14 @@ class Settings(BaseSettings):
     # Encryption key for sensitive data
     ENCRYPTION_KEY: str = "your-32-byte-encryption-key-here"  # Should be 32 bytes for AES-256
 
+    # Azure SQL connection string
+    AZURE_SQL_CONN: str
+
+    # Auth0 Management API credentials (used for creating/deleting users)
+    AUTH0_MANAGEMENT_API_CLIENT_ID: str
+    AUTH0_MANAGEMENT_API_CLIENT_SECRET: str
+    AUTH0_MANAGEMENT_API_AUDIENCE: str
+
     class Config:
         """
         Tell BaseSettings the env file path

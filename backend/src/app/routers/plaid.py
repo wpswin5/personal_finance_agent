@@ -1,5 +1,4 @@
 import logging
-from dotenv import load_dotenv
 from datetime import datetime, timedelta
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -27,7 +26,6 @@ from app.security.access_token import AccessToken
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
-load_dotenv()
 
 @router.post("/create_link_token", response_model=PlaidLinkTokenResponse)
 async def create_link_token(

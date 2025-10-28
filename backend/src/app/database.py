@@ -1,14 +1,13 @@
 from contextlib import contextmanager
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, Session, declarative_base
-import os
-from dotenv import load_dotenv
+from app.config import get_settings
 
-load_dotenv()
+settings = get_settings()
 
 from urllib.parse import quote_plus
 
-connection_string = os.getenv("AZURE_SQL_CONN")
+connection_string = settings.AZURE_SQL_CONN
 params = quote_plus(connection_string)
 DATABASE_URL = f"mssql+pyodbc:///?odbc_connect={params}"
 

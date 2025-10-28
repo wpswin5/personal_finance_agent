@@ -1,12 +1,12 @@
 import os
 import pyodbc
-from dotenv import load_dotenv
+from app.config import get_settings
 
-load_dotenv()
+settings = get_settings()
 
 MIGRATIONS_DIR = "infra/migrations"
 
-conn = pyodbc.connect(os.getenv("AZURE_SQL_CONN"))
+conn = pyodbc.connect(settings.AZURE_SQL_CONN)
 
 cursor = conn.cursor()
 
