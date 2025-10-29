@@ -28,6 +28,10 @@ async def get_current_user_id(
         raise HTTPException(status_code=e.status_code, detail=e.message)
     except:
         raise
+    # If lookup failed, return a clear 404 instead of allowing a None to be returned
+    # which causes a ResponseValidationError in FastAPI when an int is expected.
+    if user_id is None:
+        raise HTTPException(status_code=404, detail="User id not found")
     return user_id
 
 @router.get("/me")

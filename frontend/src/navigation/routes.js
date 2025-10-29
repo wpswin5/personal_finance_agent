@@ -1,40 +1,15 @@
 // Central definition of all app routes
 // Can also include metadata for navigation (e.g. labels, icons)
 
-import { Home, CreditCard, List, Target, Settings } from "lucide-react"; 
-// lucide-react = lightweight icon library (used a lot in production apps)
+import { Home, CreditCard, Users, MessageCircle, User } from "lucide-react";
 
+// Simplified app routes for the rough-draft frontend
 const routes = [
-  {
-    path: "/",
-    name: "Dashboard",
-    icon: Home,
-    component: "Dashboard", // we’ll lazy load by name in Router.js
-  },
-  {
-    path: "/accounts",
-    name: "Accounts",
-    icon: CreditCard,
-    component: "Accounts",
-  },
-  {
-    path: "/transactions",
-    name: "Transactions",
-    icon: List,
-    component: "Transactions",
-  },
-  {
-    path: "/insights",
-    name: "Insights",
-    icon: Target,
-    component: "Insights",
-  },
-  {
-    path: "/chat",
-    name: "Chat",
-    icon: Settings,
-    component: "Chat",
-  },
+  { path: "/", name: "Dashboard", icon: Home, component: "Dashboard" },
+  { path: "/accounts", name: "Accounts", icon: CreditCard, component: "Accounts" },
+  { path: "/households", name: "Households", icon: Users, component: "Households" },
+  { path: "/agent", name: "Agent", icon: MessageCircle, component: "Agent" },
+  { path: "/profile", name: "Profile", icon: User, component: "Profile" },
 ];
 
 export default routes;

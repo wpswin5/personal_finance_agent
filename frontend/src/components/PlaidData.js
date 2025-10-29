@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 
-const PlaidData = ({ token, plaidConnected }) => {
+const PlaidData = ({ token, plaidConnected, showTabs = true }) => {
   const [accounts, setAccounts] = useState([]);
   const [transactions, setTransactions] = useState([]);
   const [connections, setConnections] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [activeTab, setActiveTab] = useState('accounts');
+  // start on connections tab to avoid immediately attempting to fetch accounts
+  // which may be unavailable for some users or endpoints.
+  const [activeTab, setActiveTab] = useState('connections');
 
   // Fetch accounts
   const fetchAccounts = async () => {
@@ -20,11 +22,16 @@ const PlaidData = ({ token, plaidConnected }) => {
       });
 
       if (!response.ok) {
+        // treat 404/204 as empty result rather than a hard failure
+        if (response.status === 404 || response.status === 204) {
+          setAccounts([]);
+          return;
+        }
         throw new Error('Failed to fetch accounts');
       }
 
       const data = await response.json();
-      setAccounts(data.accounts);
+      setAccounts(data.accounts || []);
     } catch (error) {
       console.error('Error fetching accounts:', error);
       setError(error.message);
@@ -45,11 +52,15 @@ const PlaidData = ({ token, plaidConnected }) => {
       });
 
       if (!response.ok) {
+        if (response.status === 404 || response.status === 204) {
+          setTransactions([]);
+          return;
+        }
         throw new Error('Failed to fetch transactions');
       }
 
       const data = await response.json();
-      setTransactions(data.transactions);
+      setTransactions(data.transactions || []);
     } catch (error) {
       console.error('Error fetching transactions:', error);
       setError(error.message);
@@ -70,11 +81,15 @@ const PlaidData = ({ token, plaidConnected }) => {
       });
 
       if (!response.ok) {
+        if (response.status === 404 || response.status === 204) {
+          setConnections([]);
+          return;
+        }
         throw new Error('Failed to fetch connections');
       }
 
       const data = await response.json();
-      setConnections(data);
+      setConnections(data || []);
     } catch (error) {
       console.error('Error fetching connections:', error);
       setError(error.message);
@@ -122,6 +137,9 @@ const PlaidData = ({ token, plaidConnected }) => {
       fetchTransactions();
     }
   }, [plaidConnected, token, activeTab]);
+
+  // If embedded in the Accounts page we don't want the tabs to show at all.
+  if (!showTabs) return null;
 
   if (!plaidConnected) {
     return (

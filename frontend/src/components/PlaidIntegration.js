@@ -3,15 +3,20 @@ import PlaidLink from './PlaidLink';
 import PlaidData from './PlaidData';
 import './PlaidIntegration.css';
 
-const PlaidIntegration = ({ token }) => {
-  const [plaidConnected, setPlaidConnected] = useState(false);
+const PlaidIntegration = ({ token, plaidConnected, setPlaidConnected, setConnectionsRefreshKey }) => {
+  // `plaidConnected` and `setPlaidConnected` are lifted to the parent `Accounts` page.
   const [connectionData, setConnectionData] = useState(null);
 
   const handlePlaidSuccess = (data, metadata) => {
     console.log('Plaid connection successful:', data, metadata);
     setConnectionData(data);
-    setPlaidConnected(true);
-    
+    if (typeof setPlaidConnected === 'function') setPlaidConnected(true);
+    // Trigger a refresh in the parent so AccountConnections reloads its list.
+    if (typeof setConnectionsRefreshKey === 'function') {
+      // slight delay to give backend a moment to sync
+      setTimeout(() => setConnectionsRefreshKey((k) => (k || 0) + 1), 800);
+    }
+
     // Show success message
     alert(`Successfully connected to ${data.institution_name || 'your bank'}!`);
   };
@@ -29,36 +34,23 @@ const PlaidIntegration = ({ token }) => {
       </div>
 
       <div className="plaid-content">
+        {/* Simplified: remove the long "Why connect" section and show the connect action only */}
         {!plaidConnected && (
           <div className="plaid-connect-section">
-            <div className="connect-info">
-              <h3>Why Connect Your Bank?</h3>
-              <ul>
-                <li>Automatically import transactions</li>
-                <li>Get real-time account balances</li>
-                <li>Receive personalized financial insights</li>
-                <li>Track spending patterns and budgets</li>
-                <li>Detect unusual transactions</li>
-              </ul>
-            </div>
-            
             <div className="connect-action">
-              <PlaidLink 
+              <PlaidLink
                 onSuccess={handlePlaidSuccess}
                 onError={handlePlaidError}
                 token={token}
               />
               <p className="security-note">
-                🔒 Your data is encrypted and secure. We use bank-level security to protect your information.
+                🔒 Your data is encrypted and secure.
               </p>
             </div>
           </div>
         )}
 
-        <PlaidData 
-          token={token} 
-          plaidConnected={plaidConnected}
-        />
+  <PlaidData token={token} plaidConnected={plaidConnected} showTabs={false} />
 
         {plaidConnected && (
           <div className="add-more-accounts">

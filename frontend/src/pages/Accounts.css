@@ -1,6 +1,6 @@
 .accounts-container {
   min-height: calc(100vh - 70px);
-  background: #f8f9fa;
+  background: var(--bg);
 }
 
 .loading-spinner {
@@ -9,7 +9,7 @@
   align-items: center;
   height: 300px;
   font-size: 1.2rem;
-  color: #7f8c8d;
+  color: var(--muted);
 }
 
 .error-message {

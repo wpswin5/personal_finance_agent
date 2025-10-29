@@ -3,6 +3,7 @@ import { useAuth0 } from "@auth0/auth0-react";
 import Navigation from "./components/Navigation";
 import AppRouter from "./navigation/Router";
 import "./App.css";
+import "./styles/shared.css";
 
 function App() {
   const { loginWithPopup, isAuthenticated, isLoading } = useAuth0();
