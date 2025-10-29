@@ -1,27 +1,35 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { Edit } from 'lucide-react';
 import "./AccountConnections.css";
 
-const AccountConnections = ({ token, plaidConnected }) => {
+const AccountConnections = ({ token, plaidConnected, setPlaidConnected, connectionsRefreshKey }) => {
   const [connections, setConnections] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [expanded, setExpanded] = useState({}); // Track open/closed connections
+  // static display: no collapse state needed
 
-  // --- new nickname modal state ---
-  const [nicknameModalOpen, setNicknameModalOpen] = useState(false);
-  const [selectedAccount, setSelectedAccount] = useState(null);
-  const [nicknameInput, setNicknameInput] = useState("");
-  const [savingNickname, setSavingNickname] = useState(false);
+  // Inline edit state
+  const [editingAccountId, setEditingAccountId] = useState(null);
+  const [editingNickname, setEditingNickname] = useState("");
+  const [editingSaving, setEditingSaving] = useState(false);
   // --------------------------------
 
   // Fetch user ID
   const fetchUserId = async () => {
-    const response = await axios.get("http://localhost:8000/user/id", {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    if (response.statusText !== "OK") throw new Error("Failed to fetch user info");
-    return response.data;
+    try {
+      const response = await axios.get("http://localhost:8000/user/id", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (response.status !== 200) {
+        throw new Error(`Failed to fetch user id (status ${response.status})`);
+      }
+      return response.data;
+    } catch (err) {
+      // Bubble up a clearer message for the UI
+      const msg = err?.response?.data?.detail || err.message || "Failed to fetch user id";
+      throw new Error(msg);
+    }
   };
 
   // Fetch user connections
@@ -30,12 +38,19 @@ const AccountConnections = ({ token, plaidConnected }) => {
     setError(null);
     try {
       const userId = await fetchUserId();
-      const response = await fetch(`http://localhost:8000/accounts/${userId}/connections`, {
+      const resp = await axios.get(`http://localhost:8000/accounts/${userId}/connections`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      if (!response.ok) throw new Error("Failed to fetch connections");
-      const data = await response.json();
-      setConnections(data.plaid_users || []);
+      if (resp.status !== 200) throw new Error(`Failed to fetch connections (status ${resp.status})`);
+      const data = resp.data;
+      const users = data.plaid_users || [];
+      setConnections(users);
+
+      // Notify parent that we have existing connections so other components
+      // (which rely on `plaidConnected`) can update their UI accordingly.
+      if (typeof setPlaidConnected === 'function') {
+        setPlaidConnected(users.length > 0);
+      }
     } catch (err) {
       console.error(err);
       setError(err.message);
@@ -59,24 +74,28 @@ const AccountConnections = ({ token, plaidConnected }) => {
     }
   };
 
-  // --- new nickname handlers ---
-  const handleAddNicknameClick = (account) => {
-    setSelectedAccount(account);
-    setNicknameInput(account.nickname || "");
-    setNicknameModalOpen(true);
+  // --- inline nickname handlers ---
+  const startEditing = (account) => {
+    setEditingAccountId(account.account_id);
+    setEditingNickname(account.nickname || account.name || "");
   };
 
-  const handleNicknameSubmit = async () => {
-    if (!selectedAccount) return;
-    setSavingNickname(true);
+  const cancelEditing = () => {
+    setEditingAccountId(null);
+    setEditingNickname("");
+  };
+
+  const saveNickname = async (account) => {
+    if (!account) return;
+    setEditingSaving(true);
     try {
-      const res = await fetch(`http://localhost:8000/accounts/${selectedAccount.id}`, {
+      const res = await fetch(`http://localhost:8000/accounts/${account.id}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ nickname: nicknameInput }),
+        body: JSON.stringify({ nickname: editingNickname }),
       });
 
       if (!res.ok) {
@@ -89,39 +108,41 @@ const AccountConnections = ({ token, plaidConnected }) => {
         prev.map((conn) => ({
           ...conn,
           accounts: conn.accounts.map((acc) =>
-            acc.account_id === selectedAccount.account_id
-              ? { ...acc, nickname: nicknameInput }
-              : acc
+            acc.account_id === account.account_id ? { ...acc, nickname: editingNickname } : acc
           ),
         }))
       );
 
-      setNicknameModalOpen(false);
-      setSelectedAccount(null);
-      setNicknameInput("");
+      // Clear editing state
+      setEditingAccountId(null);
+      setEditingNickname("");
     } catch (err) {
       console.error("Failed to update nickname:", err);
       alert("Failed to update nickname. " + (err.message || "Please try again."));
     } finally {
-      setSavingNickname(false);
+      setEditingSaving(false);
     }
   };
   // --------------------------------
 
-  const toggleExpand = (id) => {
-    setExpanded((prev) => ({
-      ...prev,
-      [id]: !prev[id],
-    }));
-  };
 
+  // Fetch connections on mount when we have a token so existing
+  // connections are visible even before a new Plaid flow occurs.
+  useEffect(() => {
+    if (token) fetchConnections();
+  }, [token]);
+
+  // Re-fetch when parent signals a refresh (e.g. after a new Plaid connection)
+  useEffect(() => {
+    if (token && typeof connectionsRefreshKey !== 'undefined') {
+      fetchConnections();
+    }
+  }, [connectionsRefreshKey]);
+
+  // Also re-fetch when a new Plaid connection is established elsewhere
   useEffect(() => {
     if (plaidConnected && token) fetchConnections();
   }, [plaidConnected, token]);
-
-  if (!plaidConnected) {
-    return <div className="alert alert-info">Connect a bank account to view your financial data.</div>;
-  }
 
   return (
     <div className="plaid-data-container">
@@ -135,103 +156,99 @@ const AccountConnections = ({ token, plaidConnected }) => {
           <p>No bank connections found.</p>
         ) : (
           <div className="connections-list-vertical">
-            {connections.map((connection) => {
-              const isOpen = expanded[connection.id];
-              return (
-                <div key={connection.id} className="connection-block">
-                  <div className="connection-card">
-                    <div
-                      className="connection-header"
-                      onClick={() => toggleExpand(connection.id)}
-                    >
-                      <div className="connection-title">
-                        <span className={`chevron ${isOpen ? "open" : ""}`}>▸</span>
-                        <h4>{connection.institution_name || "Unknown Institution"}</h4>
-                      </div>
-                      <div className="connection-meta">
-                        <p>Accounts: {connection.accounts?.length || 0}</p>
-                        <button
-                          className="btn btn-danger btn-sm"
-                          onClick={(e) => {
-                            e.stopPropagation(); // prevent collapsing when deleting
-                            deleteConnection(connection.id);
-                          }}
-                        >
-                          Delete
-                        </button>
-                      </div>
+            {connections.map((connection) => (
+              <div key={connection.id} className="connection-block">
+                <div className="connection-card">
+                  <div className="connection-header">
+                    <div className="connection-title">
+                      <h4>{connection.institution_name || "Unknown Institution"}</h4>
+                    </div>
+                    <div className="connection-meta">
+                      <p>Accounts: {connection.accounts?.length || 0}</p>
+                      <button
+                        className="btn btn-danger btn-sm"
+                        onClick={() => deleteConnection(connection.id)}
+                      >
+                        Delete
+                      </button>
                     </div>
                   </div>
+                </div>
 
-                  <div className={`accounts-collapsible ${isOpen ? "expanded" : ""}`}>
-                    {connection.accounts?.length > 0 ? (
-                      connection.accounts.map((account) => (
-                        <div key={account.account_id} className="account-card">
-                          <h5>{account.nickname || account.name}</h5>
-                          <p>
-                            Type: {account.type}{" "}
-                            {account.subtype && `(${account.subtype})`}
-                          </p>
-                          <p>
-                            Balance: ${account.balance_current.toFixed(2)} {account.currency}
-                          </p>
+                <div className="accounts-list">
+                  {connection.accounts?.length > 0 ? (
+                    connection.accounts.map((account) => (
+                      <div key={account.account_id} className="account-row">
+                        <div className="account-left">
+                          <h5 className="account-name">
+                            {editingAccountId === account.account_id ? (
+                              <div className="inline-edit">
+                                <input
+                                  className="inline-edit-input"
+                                  value={editingNickname}
+                                  onChange={(e) => setEditingNickname(e.target.value)}
+                                />
+                                <div className="inline-edit-actions">
+                                  <button
+                                    className="btn btn-sm"
+                                    onClick={() => saveNickname(account)}
+                                    disabled={editingSaving}
+                                  >
+                                    {editingSaving ? "Saving..." : "Save"}
+                                  </button>
+                                  <button
+                                    className="btn btn-sm"
+                                    onClick={cancelEditing}
+                                    disabled={editingSaving}
+                                    style={{ background: 'transparent' }}
+                                  >
+                                    Cancel
+                                  </button>
+                                </div>
+                              </div>
+                            ) : (
+                              <>
+                                {account.nickname || account.name}
+                                <button
+                                  className="edit-nickname"
+                                  title="Edit nickname"
+                                  onClick={() => startEditing(account)}
+                                  aria-label={`Edit nickname for ${account.nickname || account.name}`}
+                                >
+                                  <Edit size={16} />
+                                </button>
+                              </>
+                            )}
+                          </h5>
+                          <p className="account-meta">Type: {account.type} {account.subtype && `(${account.subtype})`}</p>
+                        </div>
+
+                        <div className="account-right">
+                          <p className="account-balance">${account.balance_current.toFixed(2)} {account.currency}</p>
                           <button
-                            className="btn btn-secondary btn-sm"
-                            onClick={() => handleAddNicknameClick(account)}
+                            className="btn btn-danger btn-sm"
+                            onClick={() => {
+                              if (window.confirm('Are you sure you want to delete this account?')) {
+                                deleteConnection(connection.id);
+                              }
+                            }}
                           >
-                            Add Nickname
+                            Delete
                           </button>
                         </div>
-                      ))
-                    ) : (
-                      <p className="no-accounts">No accounts found.</p>
-                    )}
-                  </div>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="no-accounts">No accounts found.</p>
+                  )}
                 </div>
-              );
-            })}
+              </div>
+            ))}
           </div>
         )}
       </div>
 
-      {/* --- nickname modal --- */}
-      {nicknameModalOpen && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <h3>Add Nickname</h3>
-            <p>
-              Account: <strong>{selectedAccount?.name}</strong>
-            </p>
-            <input
-              type="text"
-              value={nicknameInput}
-              onChange={(e) => setNicknameInput(e.target.value)}
-              placeholder="Enter nickname"
-              className="nickname-input"
-            />
-            <div className="modal-actions">
-              <button
-                type="button"
-                onClick={() => {
-                  setNicknameModalOpen(false);
-                  setSelectedAccount(null);
-                }}
-                disabled={savingNickname}
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={handleNicknameSubmit}
-                disabled={savingNickname}
-              >
-                {savingNickname ? "Saving..." : "Save"}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-      {/* ---------------------- */}
+      {/* inline editing — modal removed */}
     </div>
   );
 };

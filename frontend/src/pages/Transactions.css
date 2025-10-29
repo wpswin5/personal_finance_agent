@@ -1,24 +1,24 @@
 .transactions-container {
   min-height: calc(100vh - 70px);
-  background: #f8f9fa;
+  background: var(--bg);
 }
 
 .transactions-header {
-  background: white;
+  background: var(--card);
   padding: 30px 20px;
   text-align: center;
-  border-bottom: 1px solid #ecf0f1;
+  border-bottom: 1px solid rgba(15,23,42,0.04);
 }
 
 .transactions-header h1 {
-  color: #2c3e50;
+  color: var(--text);
   font-size: 2.5rem;
   margin-bottom: 10px;
   font-weight: 700;
 }
 
 .transactions-header p {
-  color: #7f8c8d;
+  color: var(--muted);
   font-size: 1.2rem;
 }
 
@@ -32,7 +32,7 @@
   align-items: center;
   height: 300px;
   font-size: 1.2rem;
-  color: #7f8c8d;
+  color: var(--muted);
 }
 
 .error-message {

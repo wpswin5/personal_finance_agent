@@ -1,0 +1,99 @@
+/* Minimal shared styles for the lightweight frontend draft */
+
+:root {
+  --bg: #f7f8fb;
+  --card: #ffffff;
+  --muted: #6b7280;
+  --accent: #0ea5ff;
+  --text: #0f172a;
+  --nav-bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --nav-text: #ffffff;
+}
+
+/* Dark theme (basic) - applied by adding .theme-dark to <html> or <body> */
+.theme-dark {
+  --bg: #0b1220;
+  --card: #071022;
+  --muted: #94a3b8;
+  --accent: #38bdf8;
+  --text: #e6eef8;
+  --nav-bg: linear-gradient(135deg, #071022 0%, #0b1220 100%);
+  --nav-text: #e6eef8;
+}
+
+/* System uses prefers-color-scheme when selected */
+
+
+.page-container {
+  padding: 20px;
+  color: var(--text);
+}
+
+/* Apply background to body via root vars */
+body {
+  background: var(--bg);
+}
+
+.page-header h1 {
+  margin: 0 0 6px 0;
+}
+
+.muted {
+  color: var(--muted);
+  margin: 0;
+}
+
+.card {
+  background: var(--card);
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+  margin-top: 12px;
+}
+
+.profile-grid {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.avatar-large {
+  width: 88px;
+  height: 88px;
+  border-radius: 10px;
+  object-fit: cover;
+}
+
+.user-json {
+  background: #f3f4f6;
+  padding: 8px;
+  border-radius: 6px;
+  overflow: auto;
+  max-height: 200px;
+}
+
+.profile-details {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.profile-row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.profile-label {
+  min-width: 90px;
+  color: #6b7280;
+  font-weight: 600;
+}
+
+.profile-value {
+  color: #0f172a;
+}
+
+.page-container .loading-spinner {
+  padding: 24px;
+}

@@ -8,6 +8,10 @@ const Accounts = () => {
   const { getAccessTokenSilently, isAuthenticated } = useAuth0();
   const [token, setToken] = useState(null);
   const [loading, setLoading] = useState(true);
+  // Lifted state so PlaidIntegration and AccountConnections can coordinate
+  const [plaidConnected, setPlaidConnected] = useState(false);
+  // used to trigger refreshes of the connections list when a new item is added
+  const [connectionsRefreshKey, setConnectionsRefreshKey] = useState(0);
 
   useEffect(() => {
     const getToken = async () => {
@@ -49,8 +53,18 @@ const Accounts = () => {
 
   return (
     <div className="accounts-container">
-      <PlaidIntegration token={token} />
-      <AccountConnections token={token} plaidConnected={true} />
+      <PlaidIntegration
+        token={token}
+        plaidConnected={plaidConnected}
+        setPlaidConnected={setPlaidConnected}
+        setConnectionsRefreshKey={setConnectionsRefreshKey}
+      />
+      <AccountConnections
+        token={token}
+        plaidConnected={plaidConnected}
+        setPlaidConnected={setPlaidConnected}
+        connectionsRefreshKey={connectionsRefreshKey}
+      />
     </div>
   );
 };

@@ -10,12 +10,12 @@
 }
 
 .plaid-header h2 {
-  color: #2c3e50;
+  color: var(--text);
   margin-bottom: 10px;
 }
 
 .plaid-header p {
-  color: #7f8c8d;
+  color: var(--muted);
   font-size: 16px;
 }
 
@@ -25,12 +25,12 @@
   gap: 40px;
   margin-bottom: 40px;
   padding: 30px;
-  background: #f8f9fa;
+  background: var(--bg);
   border-radius: 10px;
 }
 
 .connect-info h3 {
-  color: #2c3e50;
+  color: var(--text);
   margin-bottom: 15px;
 }
 
@@ -41,7 +41,7 @@
 
 .connect-info li {
   padding: 8px 0;
-  color: #34495e;
+  color: var(--text);
 }
 
 .connect-info li:before {
@@ -61,7 +61,7 @@
 .security-note {
   margin-top: 15px;
   font-size: 14px;
-  color: #7f8c8d;
+  color: var(--muted);
   max-width: 300px;
 }
 
@@ -78,7 +78,7 @@
 }
 
 .btn-primary {
-  background-color: #3498db;
+  background-color: var(--accent);
   color: white;
 }
 
@@ -116,7 +116,7 @@
 
 .tabs {
   display: flex;
-  border-bottom: 2px solid #ecf0f1;
+  border-bottom: 2px solid rgba(15,23,42,0.04);
   margin-bottom: 20px;
 }
 
@@ -126,18 +126,18 @@
   border: none;
   cursor: pointer;
   font-size: 16px;
-  color: #7f8c8d;
+  color: var(--muted);
   border-bottom: 2px solid transparent;
   transition: all 0.3s ease;
 }
 
 .tab:hover {
-  color: #2c3e50;
+  color: var(--text);
 }
 
 .tab.active {
-  color: #3498db;
-  border-bottom-color: #3498db;
+  color: var(--accent);
+  border-bottom-color: var(--accent);
 }
 
 .alert {
@@ -147,9 +147,9 @@
 }
 
 .alert-info {
-  background-color: #d1ecf1;
-  border: 1px solid #bee5eb;
-  color: #0c5460;
+  background-color: rgba(13,110,120,0.06);
+  border: 1px solid rgba(13,110,120,0.14);
+  color: var(--text);
 }
 
 .alert-danger {
@@ -161,7 +161,7 @@
 .loading {
   text-align: center;
   padding: 40px;
-  color: #7f8c8d;
+  color: var(--muted);
   font-size: 18px;
 }
 
@@ -175,20 +175,20 @@
   justify-content: space-between;
   align-items: center;
   padding: 20px;
-  background: white;
-  border: 1px solid #ecf0f1;
+  background: var(--card);
+  border: 1px solid rgba(15,23,42,0.04);
   border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 4px rgba(2,6,23,0.04);
 }
 
 .connection-info h4 {
   margin: 0 0 5px 0;
-  color: #2c3e50;
+  color: var(--text);
 }
 
 .connection-info p {
   margin: 2px 0;
-  color: #7f8c8d;
+  color: var(--muted);
   font-size: 14px;
 }
 
@@ -200,20 +200,20 @@
 
 .account-card {
   padding: 20px;
-  background: white;
-  border: 1px solid #ecf0f1;
+  background: var(--card);
+  border: 1px solid rgba(15,23,42,0.04);
   border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 4px rgba(2,6,23,0.04);
 }
 
 .account-card h4 {
   margin: 0 0 10px 0;
-  color: #2c3e50;
+  color: var(--text);
 }
 
 .account-card p {
   margin: 5px 0;
-  color: #7f8c8d;
+  color: var(--muted);
 }
 
 .transactions-list {
@@ -226,21 +226,21 @@
   justify-content: space-between;
   align-items: center;
   padding: 15px;
-  background: white;
-  border: 1px solid #ecf0f1;
+  background: var(--card);
+  border: 1px solid rgba(15,23,42,0.04);
   border-radius: 6px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  box-shadow: 0 1px 3px rgba(2,6,23,0.04);
 }
 
 .transaction-info h4 {
   margin: 0 0 5px 0;
-  color: #2c3e50;
+  color: var(--text);
   font-size: 16px;
 }
 
 .transaction-info p {
   margin: 2px 0;
-  color: #7f8c8d;
+  color: var(--muted);
   font-size: 14px;
 }
 
@@ -270,13 +270,13 @@
 .add-more-accounts {
   margin-top: 40px;
   padding: 30px;
-  background: #f8f9fa;
+  background: var(--bg);
   border-radius: 10px;
   text-align: center;
 }
 
 .add-more-accounts h3 {
-  color: #2c3e50;
+  color: var(--text);
   margin-bottom: 20px;
 }
 
@@ -299,4 +299,15 @@
     align-self: flex-end;
     margin-top: 10px;
   }
+}
+
+/* Center Plaid Link buttons when used standalone */
+.plaid-link-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 10px;
+}
+
+.plaid-link-container .btn {
+  min-width: 220px;
 }

@@ -5,7 +5,7 @@
 }
 
 .connections-tab h3 {
-  color: #2c3e50;
+  color: var(--text);
   margin-bottom: 20px;
 }
 
@@ -17,9 +17,9 @@
 
 .connection-block {
   border-radius: 10px;
-  background: #fff;
-  border: 1px solid #ecf0f1;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+  background: var(--card);
+  border: 1px solid rgba(15,23,42,0.04);
+  box-shadow: 0 2px 5px rgba(2,6,23,0.04);
   overflow: hidden;
 }
 
@@ -29,12 +29,12 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: #fafafa;
+  background: transparent;
   transition: background 0.3s ease;
 }
 
 .connection-card:hover {
-  background: #f3f6f8;
+  background: rgba(15,23,42,0.02);
 }
 
 .connection-header {
@@ -52,7 +52,7 @@
 
 .connection-title h4 {
   margin: 0;
-  color: #2c3e50;
+  color: var(--text);
 }
 
 .connection-meta {
@@ -63,7 +63,7 @@
 
 .connection-meta p {
   margin: 0;
-  color: #7f8c8d;
+  color: var(--muted);
   font-size: 14px;
 }
 
@@ -71,7 +71,7 @@
 .chevron {
   display: inline-block;
   transition: transform 0.2s ease;
-  color: #3498db;
+  color: var(--accent);
   font-weight: bold;
 }
 
@@ -85,7 +85,7 @@
   overflow: hidden;
   transition: max-height 0.25s ease, padding 0.25s ease;
   padding: 0 20px;
-  border-left: 3px solid #ecf0f1;
+  border-left: 3px solid rgba(15,23,42,0.04);
   margin-left: 15px;
 }
 
@@ -94,28 +94,95 @@
   padding: 10px 20px 15px 20px;
 }
 
-.account-card {
-  background: #f8f9fa;
-  border: 1px solid #ecf0f1;
+.accounts-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px 18px 18px 18px;
+}
+
+.account-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  background: var(--bg);
+  border: 1px solid rgba(15,23,42,0.04);
+  border-radius: 8px;
+  box-shadow: 0 1px 4px rgba(2,6,23,0.03);
+}
+
+.account-left {
+  display: flex;
+  flex-direction: column;
+}
+
+.account-name {
+  margin: 0;
+  font-size: 1rem;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.edit-nickname {
+  background: transparent;
+  border: none;
+  padding: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--muted);
+}
+.edit-nickname:hover { color: var(--accent); }
+
+.account-meta {
+  margin: 4px 0 0 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.account-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.account-balance {
+  margin: 0;
+  font-weight: 700;
+  color: var(--text);
+}
+
+/* Inline edit styles */
+.inline-edit {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.inline-edit-input {
+  padding: 6px 8px;
   border-radius: 6px;
-  padding: 12px 15px;
-  margin: 6px 0;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-}
-
-.account-card h5 {
-  margin: 0 0 4px 0;
-  color: #2c3e50;
-}
-
-.account-card p {
-  margin: 2px 0;
-  color: #7f8c8d;
+  border: 1px solid rgba(15,23,42,0.06);
   font-size: 14px;
+  outline: none;
+}
+
+.inline-edit-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.inline-edit-actions .btn-sm {
+  padding: 6px 8px;
+  font-size: 13px;
 }
 
 .no-accounts {
-  color: #7f8c8d;
+  color: var(--muted);
   font-style: italic;
   padding-left: 10px;
   margin-top: 8px;
@@ -129,21 +196,21 @@
 }
 
 .alert-info {
-  background-color: #d1ecf1;
-  border: 1px solid #bee5eb;
-  color: #0c5460;
+  background-color: rgba(13,110,120,0.06);
+  border: 1px solid rgba(13,110,120,0.14);
+  color: var(--text);
 }
 
 .alert-danger {
-  background-color: #f8d7da;
-  border: 1px solid #f5c6cb;
-  color: #721c24;
+  background-color: rgba(199,21,35,0.06);
+  border: 1px solid rgba(199,21,35,0.12);
+  color: var(--text);
 }
 
 .loading {
   text-align: center;
   padding: 40px;
-  color: #7f8c8d;
+  color: var(--muted);
   font-size: 18px;
 }
 
@@ -174,7 +241,7 @@
 
 /* --- Add Nickname Button --- */
 .btn-secondary {
-  background-color: #3498db;
+  background-color: var(--accent);
   color: #fff;
 }
 
@@ -197,9 +264,9 @@
 }
 
 .modal-content {
-  background: #ffffff;
+  background: var(--card);
   border-radius: 10px;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 6px 18px rgba(2,6,23,0.14);
   padding: 25px 30px;
   width: 90%;
   max-width: 420px;
@@ -208,12 +275,12 @@
 }
 
 .modal-content h3 {
-  color: #2c3e50;
+  color: var(--text);
   margin-bottom: 10px;
 }
 
 .modal-content p {
-  color: #7f8c8d;
+  color: var(--muted);
   margin-bottom: 15px;
   font-size: 14px;
 }
@@ -221,10 +288,10 @@
 .nickname-input {
   width: 100%;
   padding: 10px 12px;
-  border: 1px solid #ecf0f1;
+  border: 1px solid rgba(15,23,42,0.06);
   border-radius: 6px;
   font-size: 14px;
-  color: #2c3e50;
+  color: var(--text);
   margin-bottom: 20px;
   outline: none;
   transition: border 0.2s ease;
@@ -253,8 +320,8 @@
 }
 
 .modal-actions button:first-child {
-  background: #ecf0f1;
-  color: #2c3e50;
+  background: rgba(15,23,42,0.04);
+  color: var(--text);
 }
 
 .modal-actions button:first-child:hover {
@@ -262,7 +329,7 @@
 }
 
 .modal-actions button:last-child {
-  background: #3498db;
+  background: var(--accent);
   color: #fff;
 }
 

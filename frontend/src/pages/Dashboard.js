@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth0 } from '@auth0/auth0-react';
 import axios from 'axios';
+import { Link } from 'react-router-dom';
+import { User, CreditCard, Home, MessageCircle } from 'lucide-react';
+import LineChart, { MiniSparkline } from '../components/Charts';
 import './Dashboard.css';
 
 const Dashboard = () => {
@@ -45,52 +48,61 @@ const Dashboard = () => {
         <p>Here's your financial overview</p>
       </div>
 
-      <div className="dashboard-grid">
-        <div className="dashboard-card">
-          <div className="card-icon">🏦</div>
-          <div className="card-content">
-            <h3>Bank Accounts</h3>
-            <p>Connect and manage your bank accounts</p>
-            <a href="/accounts" className="card-link">View Accounts →</a>
+      <div className="dashboard-stats">
+        <div className="stat-card">
+          <h4>Net worth</h4>
+          <div className="chart-placeholder">
+            <LineChart data={[1200, 1400, 1500, 1300, 1550, 1700, 1600]} width={520} height={140} />
           </div>
         </div>
 
-        <div className="dashboard-card">
-          <div className="card-icon">💳</div>
-          <div className="card-content">
-            <h3>Transactions</h3>
-            <p>View and analyze your spending</p>
-            <a href="/transactions" className="card-link">View Transactions →</a>
-          </div>
-        </div>
-
-        <div className="dashboard-card">
-          <div className="card-icon">📊</div>
-          <div className="card-content">
-            <h3>Financial Insights</h3>
-            <p>Get AI-powered financial analysis</p>
-            <a href="/insights" className="card-link">View Insights →</a>
-          </div>
-        </div>
-
-        <div className="dashboard-card">
-          <div className="card-icon">💬</div>
-          <div className="card-content">
-            <h3>AI Assistant</h3>
-            <p>Chat with your financial advisor</p>
-            <a href="/chat" className="card-link">Start Chat →</a>
+        <div className="stat-card small">
+          <h4>Spending (30d)</h4>
+          <div className="chart-placeholder small">
+            <MiniSparkline data={[200, 150, 180, 220, 140, 190, 210, 240, 200, 170, 190]} />
           </div>
         </div>
       </div>
 
-      {me && (
-        <div className="user-info-section">
-          <h2>Account Information</h2>
-          <div className="user-details">
-            <pre>{JSON.stringify(me, null, 2)}</pre>
+      <div className="dashboard-grid">
+        <Link to="/accounts" className="dashboard-card card-link-wrapper">
+          <div className="card-icon"><CreditCard size={36} /></div>
+          <div className="card-content">
+            <h3>Bank Accounts</h3>
+            <p>Connect and manage your bank accounts</p>
+            <span className="card-link">View Accounts →</span>
           </div>
-        </div>
-      )}
+        </Link>
+
+        <Link to="/profile" className="dashboard-card card-link-wrapper">
+          <div className="card-icon"><User size={36} /></div>
+          <div className="card-content">
+            <h3>Profile</h3>
+            <p>View and manage your user profile</p>
+            <span className="card-link">View Profile →</span>
+          </div>
+        </Link>
+
+        <Link to="/households" className="dashboard-card card-link-wrapper">
+          <div className="card-icon"><Home size={36} /></div>
+          <div className="card-content">
+            <h3>Households</h3>
+            <p>Manage household-linked accounts and aggregated balances</p>
+            <span className="card-link">View Households →</span>
+          </div>
+        </Link>
+
+        <Link to="/agent" className="dashboard-card card-link-wrapper">
+          <div className="card-icon"><MessageCircle size={36} /></div>
+          <div className="card-content">
+            <h3>AI Assistant</h3>
+            <p>Chat with your financial advisor</p>
+            <span className="card-link">Start Chat →</span>
+          </div>
+        </Link>
+      </div>
+
+      {/* Account information block removed (redundant) */}
     </div>
   );
 };
