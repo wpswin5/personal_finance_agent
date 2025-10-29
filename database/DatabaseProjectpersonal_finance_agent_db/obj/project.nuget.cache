@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "dgSpecHash": "cBrOhRUg5P4=",
+  "success": true,
+  "projectFilePath": "/Users/willswindell/Projects/ML Projects/personal_finance_agent/database/DatabaseProjectpersonal_finance_agent_db/DatabaseProjectpersonal_finance_agent_db.sqlproj",
+  "expectedPackageFiles": [
+    "/Users/willswindell/.nuget/packages/microsoft.netframework.referenceassemblies/1.0.3/microsoft.netframework.referenceassemblies.1.0.3.nupkg.sha512",
+    "/Users/willswindell/.nuget/packages/microsoft.netframework.referenceassemblies.net20/1.0.3/microsoft.netframework.referenceassemblies.net20.1.0.3.nupkg.sha512"
+  ],
+  "logs": []
+}
