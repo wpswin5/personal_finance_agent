@@ -206,8 +206,10 @@ async def delete_plaid_connection(
 ):
     """Delete a Plaid connection for the authenticated user."""
     try:
+        print("Deleting plaid connection id:", plaid_user_id)
         # Get user ID from database using Auth0 sub
         user_id = user_repository.get_id(token.sub)
+        print("User id: ", user_id)
         if not user_id:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -215,8 +217,9 @@ async def delete_plaid_connection(
             )
         
         # Verify the Plaid connection belongs to the user
-        plaid_user = plaid_repository.get_plaid_user_by_user_id(user_id)
-        if not plaid_user or plaid_user.id != plaid_user_id:
+        plaid_users = plaid_repository.get_all_plaid_users_for_user(user_id)
+        
+        if not plaid_users or plaid_user_id not in [pu.id for pu in plaid_users]:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Plaid connection not found"
