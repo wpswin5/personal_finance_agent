@@ -13,7 +13,7 @@ CREATE TABLE [dbo].[transactions] (
     [is_pending]        BIT             DEFAULT ((0)) NULL,
     [created_at]        DATETIME2 (7)   DEFAULT (sysutcdatetime()) NULL,
     PRIMARY KEY CLUSTERED ([id] ASC),
-    CONSTRAINT [FK_transactions_accountid] FOREIGN KEY ([account_id]) REFERENCES [dbo].[accounts] ([account_id]),
+    CONSTRAINT [FK_transactions_accountid] FOREIGN KEY ([account_id]) REFERENCES [dbo].[accounts] ([account_id]) ON DELETE CASCADE,
     UNIQUE NONCLUSTERED ([transaction_id] ASC)
 );
 

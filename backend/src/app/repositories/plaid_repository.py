@@ -116,6 +116,7 @@ class PlaidRepository:
         """Delete a Plaid user record."""
         try:
             with get_db_session() as db:
+                print("Deleting plaid user id - repo: ", plaid_user_id)
                 plaid_user = db.query(PlaidUser).filter(PlaidUser.id == plaid_user_id).first()
                 if plaid_user:
                     db.delete(plaid_user)
