@@ -95,6 +95,7 @@ class Household(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String)
+    owner_id = Column(Integer, ForeignKey("users.id"))
     created_at = Column(DateTime, nullable=True)
 
     household_members= relationship(

@@ -172,22 +172,6 @@
 		</Element>
 		<Element Type="SqlDefaultConstraint">
 			<Property Name="DefaultExpressionScript">
-				<Value><![CDATA[('member')]]></Value>
-			</Property>
-			<Relationship Name="DefiningTable">
-				<Entry>
-					<References Name="[dbo].[household_members]" />
-				</Entry>
-			</Relationship>
-			<Relationship Name="ForColumn">
-				<Entry>
-					<References Name="[dbo].[household_members].[role]" />
-				</Entry>
-			</Relationship>
-			<Annotation Type="SqlInlineConstraintAnnotation" Disambiguator="11" />
-		</Element>
-		<Element Type="SqlDefaultConstraint">
-			<Property Name="DefaultExpressionScript">
 				<Value><![CDATA[(sysutcdatetime())]]></Value>
 			</Property>
 			<Relationship Name="DefiningTable">
@@ -198,6 +182,22 @@
 			<Relationship Name="ForColumn">
 				<Entry>
 					<References Name="[dbo].[households].[created_at]" />
+				</Entry>
+			</Relationship>
+			<Annotation Type="SqlInlineConstraintAnnotation" Disambiguator="11" />
+		</Element>
+		<Element Type="SqlDefaultConstraint">
+			<Property Name="DefaultExpressionScript">
+				<Value><![CDATA[('member')]]></Value>
+			</Property>
+			<Relationship Name="DefiningTable">
+				<Entry>
+					<References Name="[dbo].[household_members]" />
+				</Entry>
+			</Relationship>
+			<Relationship Name="ForColumn">
+				<Entry>
+					<References Name="[dbo].[household_members].[role]" />
 				</Entry>
 			</Relationship>
 			<Annotation Type="SqlInlineConstraintAnnotation" Disambiguator="12" />
@@ -307,25 +307,6 @@
 					<Element Type="SqlIndexedColumnSpecification">
 						<Relationship Name="Column">
 							<Entry>
-								<References Name="[dbo].[accounts].[id]" />
-							</Entry>
-						</Relationship>
-					</Element>
-				</Entry>
-			</Relationship>
-			<Relationship Name="DefiningTable">
-				<Entry>
-					<References Name="[dbo].[accounts]" />
-				</Entry>
-			</Relationship>
-			<Annotation Type="SqlInlineConstraintAnnotation" Disambiguator="18" />
-		</Element>
-		<Element Type="SqlPrimaryKeyConstraint">
-			<Relationship Name="ColumnSpecifications">
-				<Entry>
-					<Element Type="SqlIndexedColumnSpecification">
-						<Relationship Name="Column">
-							<Entry>
 								<References Name="[dbo].[household_accounts].[id]" />
 							</Entry>
 						</Relationship>
@@ -337,7 +318,7 @@
 					<References Name="[dbo].[household_accounts]" />
 				</Entry>
 			</Relationship>
-			<Annotation Type="SqlInlineConstraintAnnotation" Disambiguator="19" />
+			<Annotation Type="SqlInlineConstraintAnnotation" Disambiguator="18" />
 		</Element>
 		<Element Type="SqlPrimaryKeyConstraint">
 			<Relationship Name="ColumnSpecifications">
@@ -354,6 +335,25 @@
 			<Relationship Name="DefiningTable">
 				<Entry>
 					<References Name="[dbo].[households]" />
+				</Entry>
+			</Relationship>
+			<Annotation Type="SqlInlineConstraintAnnotation" Disambiguator="19" />
+		</Element>
+		<Element Type="SqlPrimaryKeyConstraint">
+			<Relationship Name="ColumnSpecifications">
+				<Entry>
+					<Element Type="SqlIndexedColumnSpecification">
+						<Relationship Name="Column">
+							<Entry>
+								<References Name="[dbo].[accounts].[id]" />
+							</Entry>
+						</Relationship>
+					</Element>
+				</Entry>
+			</Relationship>
+			<Relationship Name="DefiningTable">
+				<Entry>
+					<References Name="[dbo].[accounts]" />
 				</Entry>
 			</Relationship>
 			<Annotation Type="SqlInlineConstraintAnnotation" Disambiguator="20" />
@@ -421,7 +421,7 @@
 					<Element Type="SqlIndexedColumnSpecification">
 						<Relationship Name="Column">
 							<Entry>
-								<References Name="[dbo].[users].[sub]" />
+								<References Name="[dbo].[accounts].[account_id]" />
 							</Entry>
 						</Relationship>
 					</Element>
@@ -429,7 +429,7 @@
 			</Relationship>
 			<Relationship Name="DefiningTable">
 				<Entry>
-					<References Name="[dbo].[users]" />
+					<References Name="[dbo].[accounts]" />
 				</Entry>
 			</Relationship>
 			<Annotation Type="SqlInlineConstraintAnnotation" Disambiguator="24" />
@@ -440,7 +440,7 @@
 					<Element Type="SqlIndexedColumnSpecification">
 						<Relationship Name="Column">
 							<Entry>
-								<References Name="[dbo].[accounts].[account_id]" />
+								<References Name="[dbo].[users].[sub]" />
 							</Entry>
 						</Relationship>
 					</Element>
@@ -448,7 +448,7 @@
 			</Relationship>
 			<Relationship Name="DefiningTable">
 				<Entry>
-					<References Name="[dbo].[accounts]" />
+					<References Name="[dbo].[users]" />
 				</Entry>
 			</Relationship>
 			<Annotation Type="SqlInlineConstraintAnnotation" Disambiguator="25" />
@@ -674,9 +674,9 @@
 					<References ExternalSource="BuiltIns" Name="[dbo]" />
 				</Entry>
 			</Relationship>
-			<AttachedAnnotation Disambiguator="18" />
+			<AttachedAnnotation Disambiguator="20" />
 			<Annotation Type="SqlInlineConstraintAnnotation" Disambiguator="26" />
-			<AttachedAnnotation Disambiguator="25" />
+			<AttachedAnnotation Disambiguator="24" />
 		</Element>
 		<Element Type="SqlIndex" Name="[dbo].[accounts].[IX_accounts_plaid_user_id]">
 			<Relationship Name="ColumnSpecifications">
@@ -986,7 +986,7 @@
 					<References ExternalSource="BuiltIns" Name="[dbo]" />
 				</Entry>
 			</Relationship>
-			<AttachedAnnotation Disambiguator="19" />
+			<AttachedAnnotation Disambiguator="18" />
 			<AttachedAnnotation Disambiguator="27" />
 			<AttachedAnnotation Disambiguator="28" />
 			<AttachedAnnotation Disambiguator="29" />
@@ -1076,7 +1076,7 @@
 								</Element>
 							</Entry>
 						</Relationship>
-						<AttachedAnnotation Disambiguator="11" />
+						<AttachedAnnotation Disambiguator="12" />
 					</Element>
 				</Entry>
 				<Entry>
@@ -1162,6 +1162,22 @@
 					</Element>
 				</Entry>
 				<Entry>
+					<Element Type="SqlSimpleColumn" Name="[dbo].[households].[owner_id]">
+						<Property Name="IsNullable" Value="False" />
+						<Relationship Name="TypeSpecifier">
+							<Entry>
+								<Element Type="SqlTypeSpecifier">
+									<Relationship Name="Type">
+										<Entry>
+											<References ExternalSource="BuiltIns" Name="[int]" />
+										</Entry>
+									</Relationship>
+								</Element>
+							</Entry>
+						</Relationship>
+					</Element>
+				</Entry>
+				<Entry>
 					<Element Type="SqlSimpleColumn" Name="[dbo].[households].[created_at]">
 						<Relationship Name="TypeSpecifier">
 							<Entry>
@@ -1175,7 +1191,7 @@
 								</Element>
 							</Entry>
 						</Relationship>
-						<AttachedAnnotation Disambiguator="12" />
+						<AttachedAnnotation Disambiguator="11" />
 					</Element>
 				</Entry>
 			</Relationship>
@@ -1184,7 +1200,7 @@
 					<References ExternalSource="BuiltIns" Name="[dbo]" />
 				</Entry>
 			</Relationship>
-			<AttachedAnnotation Disambiguator="20" />
+			<AttachedAnnotation Disambiguator="19" />
 		</Element>
 		<Element Type="SqlTable" Name="[dbo].[plaid_users]">
 			<Property Name="IsAnsiNullsOn" Value="True" />
@@ -1841,7 +1857,7 @@
 			</Relationship>
 			<AttachedAnnotation Disambiguator="21" />
 			<AttachedAnnotation Disambiguator="23" />
-			<AttachedAnnotation Disambiguator="24" />
+			<AttachedAnnotation Disambiguator="25" />
 		</Element>
 	</Model>
 </DataSchemaModel>

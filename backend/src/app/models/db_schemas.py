@@ -108,12 +108,14 @@ class HouseholdAccountRead(HouseholdAccountBase):
 
 class HouseholdBase(BaseModel):
     name: Optional[str] = "test"
+    owner_id: Optional[int] = None
 
 class HouseholdCreate(HouseholdBase):
     pass
 
 class HouseholdRead(HouseholdBase):
     id: int = 0
+    owner_id: Optional[int] = None
     created_at: Optional[datetime] = datetime.now()
     household_members: List[HouseholdMemberRead] = []
     household_accounts: List[HouseholdAccountRead] = []
